@@ -1,5 +1,9 @@
 # MMM Platform
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/mansour305x/MMM)
+
+> منصة إدارة متكاملة مع Backend/Frontend/Database/Queue ready للإنتاج
+
 منصة إدارة عملاء ورسائل احترافية بهوية Black/Gold داكنة، مع Backend كامل (API + RBAC + OTP + Queue + SMS + Modules) وقاعدة بيانات PostgreSQL جاهزة للتشغيل.
 
 ## Stack النهائي (2025+)
