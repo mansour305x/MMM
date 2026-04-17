@@ -24,7 +24,7 @@ export function buildApp() {
   // CORS Configuration - Allow all origins in development, specific in production
   const corsOrigins = env.NODE_ENV === 'production' 
     ? env.CORS_ORIGIN 
-    : [/localhost/, /127.0.0.1/, /^https?:\/\/[a-z0-9\-\.]+$/i];
+    : true; // Allow ALL origins in development (handles localhost, 127.0.0.1, Codespaces URLs)
 
   app.register(cors, { 
     origin: corsOrigins, 

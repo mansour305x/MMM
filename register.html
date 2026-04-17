@@ -303,7 +303,29 @@
       else { input.type = 'password'; icon.classList.replace('fa-eye-slash','fa-eye'); }
     }
 
-    const API_BASE = localStorage.getItem('apiBase') || 'http://localhost:4000';
+    // Determine API base URL based on environment
+    function getAPIBase() {
+      const stored = localStorage.getItem('apiBase');
+      if (stored) return stored;
+
+      const hostname = window.location.hostname;
+
+      // GitHub Codespaces: hostname looks like xxx-5173.app.github.dev
+      // API is on port 4000 → hostname becomes xxx-4000.app.github.dev
+      if (hostname.includes('.app.github.dev') || hostname.includes('.github.dev')) {
+        const apiBase = window.location.origin
+          .replace(/-5173\./, '-4000.')
+          .replace(/:5173/, ':4000');
+        console.log('🌐 Codespaces detected, API base:', apiBase);
+        return apiBase;
+      }
+
+      // Local development
+      return 'http://localhost:4000';
+    }
+
+    const API_BASE = getAPIBase();
+    console.log('📡 API Base URL:', API_BASE);
 
     function checkStrength(val) {
       const bars  = [document.getElementById('sb1'), document.getElementById('sb2'), document.getElementById('sb3'), document.getElementById('sb4')];

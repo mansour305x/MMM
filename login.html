@@ -378,12 +378,19 @@
       const stored = localStorage.getItem('apiBase');
       if (stored) return stored;
 
-      // In production environment
-      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        return `${window.location.protocol}//${window.location.host}`;
+      const hostname = window.location.hostname;
+
+      // GitHub Codespaces: hostname looks like xxx-5173.app.github.dev
+      // API is on port 4000 → hostname becomes xxx-4000.app.github.dev
+      if (hostname.includes('.app.github.dev') || hostname.includes('.github.dev')) {
+        const apiBase = window.location.origin
+          .replace(/-5173\./, '-4000.')
+          .replace(/:5173/, ':4000');
+        console.log('🌐 Codespaces detected, API base:', apiBase);
+        return apiBase;
       }
 
-      // In development - default to localhost:4000
+      // Local development
       return 'http://localhost:4000';
     }
 
