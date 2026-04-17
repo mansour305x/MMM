@@ -1,0 +1,22 @@
+# Node and build artifacts
+node_modules/
+server/node_modules/
+server/dist/
+
+# Environment files
+.env
+.env.*
+!.env.example
+server/.env
+server/.env.*
+!server/.env.example
+
+# Logs and OS files
+*.log
+.DS_Store
+Thumbs.db
+
+# Coverage and temp
+coverage/
+.tmp/
+tmp/

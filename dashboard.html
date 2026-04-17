@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة التحكم — MMM</title>
+  <link rel="stylesheet" href="assets/css/design-system.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-5);
+      margin-bottom: var(--space-8);
+    }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: var(--text-3xl);
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1;
+      margin: var(--space-3) 0 var(--space-1);
+    }
+
+    .stat-label {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-change {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: var(--space-2);
+    }
+
+    .stat-change.up   { color: var(--success); }
+    .stat-change.down { color: var(--danger); }
+
+    .stat-icon-wrap {
+      width: 48px; height: 48px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    /* Charts Row */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: var(--space-5);
+      margin-bottom: var(--space-8);
+    }
+
+    .chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-5);
+    }
+
+    .chart-title {
+      font-size: var(--text-base);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Bottom Row */
+    .bottom-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-5);
+    }
+
+    /* Recent Activity */
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-dot {
+      width: 8px; height: 8px;
+      border-radius: var(--radius-full);
+      background: var(--gold-500);
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+
+    .activity-text {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      flex: 1;
+      line-height: 1.5;
+    }
+
+    .activity-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Top clients */
+    .top-client-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .top-client-row:last-child { border-bottom: none; }
+
+    .client-rank {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: 700;
+      color: var(--gold-700);
+      width: 24px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .client-avatar-sm {
+      width: 34px; height: 34px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--gold-700), var(--gold-500));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: var(--text-sm);
+      color: var(--black-900);
+      flex-shrink: 0;
+    }
+
+    /* Notification panel */
+    .notif-panel {
+      position: fixed;
+      top: var(--navbar-height);
+      left: 0;
+      width: 360px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-default);
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      z-index: 200;
+      transform: translateY(-110%);
+      transition: transform var(--transition-base);
+    }
+
+    .notif-panel.open { transform: translateY(0); }
+
+    .notif-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-5);
+      border-bottom: 1px solid var(--border-default);
+    }
+
+    .notif-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background var(--transition-fast);
+      cursor: pointer;
+    }
+
+    .notif-item:hover { background: var(--accent-muted); }
+    .notif-item.unread { background: rgba(212,175,55,0.04); }
+
+    .notif-icon {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      background: var(--accent-muted);
+      border: 1px solid var(--accent-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-500);
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 1200px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .charts-row { grid-template-columns: 1fr; }
+      .bottom-row { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard-layout">
+
+    <!-- ═══════════════ SIDEBAR ═════════════════════════ -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">M</div>
+        <span class="sidebar-logo-text">MMM</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <span class="nav-section-label">الرئيسي</span>
+
+        <a href="dashboard.html" class="nav-item active">
+          <i class="nav-icon fas fa-chart-pie"></i>
+          <span>لوحة التحكم</span>
+        </a>
+        <a href="customers.html" class="nav-item">
+          <i class="nav-icon fas fa-users"></i>
+          <span>إدارة العملاء</span>
+        </a>
+        <a href="messages.html" class="nav-item">
+          <i class="nav-icon fas fa-comment-dots"></i>
+          <span>الرسائل</span>
+          <span class="badge badge-gold" style="margin-right:auto;">3</span>
+        </a>
+
+        <span class="nav-section-label">الإعدادات</span>
+
+        <a href="fields.html" class="nav-item">
+          <i class="nav-icon fas fa-sliders"></i>
+          <span>الحقول الديناميكية</span>
+        </a>
+        <a href="modules.html" class="nav-item">
+          <i class="nav-icon fas fa-cubes"></i>
+          <span>الميزات</span>
+        </a>
+        <a href="permissions.html" class="nav-item">
+          <i class="nav-icon fas fa-shield-halved"></i>
+          <span>الصلاحيات</span>
+        </a>
+        <a href="settings.html" class="nav-item">
+          <i class="nav-icon fas fa-gear"></i>
+          <span>الإعدادات</span>
+        </a>
+
+        <span class="nav-section-label">النظام</span>
+
+        <a href="#" class="nav-item" onclick="toggleNotif(event)">
+          <i class="nav-icon fas fa-bell"></i>
+          <span>الإشعارات</span>
+          <span class="badge badge-gold" style="margin-right:auto;">7</span>
+        </a>
+        <a href="#" class="nav-item">
+          <i class="nav-icon fas fa-file-chart-column"></i>
+          <span>التقارير</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-card" onclick="document.getElementById('userMenu').classList.toggle('open')">
+          <div class="user-avatar">م</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">محمد المنصور</div>
+            <div style="font-size:var(--text-xs);color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">admin@mmm.com</div>
+          </div>
+          <i class="fas fa-ellipsis-vertical" style="color:var(--text-muted);font-size:14px;"></i>
+        </div>
+
+        <div class="dropdown-menu" id="userMenu" style="bottom:70px;top:auto;right:var(--space-5);left:var(--space-5);">
+          <div class="dropdown-item"><i class="fas fa-user"></i> الملف الشخصي</div>
+          <div class="dropdown-item"><i class="fas fa-gear"></i> الإعدادات</div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item" style="color:var(--danger);" onclick="window.location='login.html'"><i class="fas fa-right-from-bracket"></i> تسجيل الخروج</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ═══════════════ MAIN CONTENT ════════════════════ -->
+    <div class="dashboard-content">
+
+      <!-- NAVBAR -->
+      <nav class="dashboard-navbar">
+        <div style="display:flex;align-items:center;gap:var(--space-4);">
+          <button class="navbar-icon-btn" onclick="toggleSidebar()" style="display:none;" id="menuToggle">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="navbar-search">
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="بحث سريع..." style="background:var(--bg-card);border-color:var(--border-default);" />
+              <span class="input-icon"><i class="fas fa-search"></i></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="navbar-actions">
+          <button class="navbar-icon-btn" onclick="toggleNotif(event)">
+            <i class="fas fa-bell"></i>
+            <span class="notification-dot"></span>
+          </button>
+          <button class="navbar-icon-btn">
+            <i class="fas fa-moon"></i>
+          </button>
+          <div style="width:1px;height:32px;background:var(--border-default);"></div>
+          <div class="user-card" style="border:none;background:none;padding:var(--space-2);" onclick="document.getElementById('userMenu').classList.toggle('open')">
+            <div class="user-avatar" style="width:34px;height:34px;font-size:var(--text-xs);">م</div>
+            <div style="display:none;" class="name-display">
+              <div style="font-size:var(--text-sm);font-weight:600;">محمد المنصور</div>
+              <div style="font-size:var(--text-xs);color:var(--text-muted);">مدير النظام</div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- PAGE CONTENT -->
+      <div class="page-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">لوحة التحكم</h1>
+            <p class="page-subtitle">مرحبًا محمد، إليك ملخص نشاطك اليوم — الخميس، 17 أبريل 2025</p>
+          </div>
+          <div style="display:flex;gap:var(--space-3);">
+            <button class="btn btn-outline btn-sm">
+              <i class="fas fa-download"></i> تصدير التقرير
+            </button>
+            <button class="btn btn-primary btn-sm">
+              <i class="fas fa-plus"></i> إضافة عميل
+            </button>
+          </div>
+        </div>
+
+        <!-- ─── STATS CARDS ──────────────────────────────── -->
+        <div class="stats-grid">
+
+          <div class="card-stat">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-1);">
+              <span class="stat-label">إجمالي العملاء</span>
+              <div class="stat-icon-wrap" style="background:var(--accent-muted);color:var(--gold-500);"><i class="fas fa-users"></i></div>
+            </div>
+            <div class="stat-value">2,847</div>
+            <div class="stat-change up"><i class="fas fa-arrow-trend-up"></i> +12.5% هذا الشهر</div>
+          </div>
+
+          <div class="card-stat">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-1);">
+              <span class="stat-label">الرسائل المرسلة</span>
+              <div class="stat-icon-wrap" style="background:rgba(59,130,246,0.1);color:#93c5fd;"><i class="fas fa-paper-plane"></i></div>
+            </div>
+            <div class="stat-value">18,492</div>
+            <div class="stat-change up"><i class="fas fa-arrow-trend-up"></i> +8.3% هذا الشهر</div>
+          </div>
+
+          <div class="card-stat">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-1);">
+              <span class="stat-label">معدل الفتح</span>
+              <div class="stat-icon-wrap" style="background:rgba(45,186,126,0.1);color:#4ade80;"><i class="fas fa-envelope-open"></i></div>
+            </div>
+            <div class="stat-value">73.6%</div>
+            <div class="stat-change up"><i class="fas fa-arrow-trend-up"></i> +5.1% هذا الشهر</div>
+          </div>
+
+          <div class="card-stat">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-1);">
+              <span class="stat-label">عملاء جدد اليوم</span>
+              <div class="stat-icon-wrap" style="background:rgba(245,158,11,0.1);color:#fcd34d;"><i class="fas fa-user-plus"></i></div>
+            </div>
+            <div class="stat-value">34</div>
+            <div class="stat-change down"><i class="fas fa-arrow-trend-down"></i> -2.4% مقارنة بالأمس</div>
+          </div>
+
+        </div>
+
+        <!-- ─── CHARTS ROW ────────────────────────────────── -->
+        <div class="charts-row">
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <span class="chart-title">نشاط الرسائل — آخر 30 يومًا</span>
+              <div class="tabs" style="padding:2px;">
+                <button class="tab-btn active" style="padding:5px 14px;font-size:11px;">يومي</button>
+                <button class="tab-btn"        style="padding:5px 14px;font-size:11px;">أسبوعي</button>
+                <button class="tab-btn"        style="padding:5px 14px;font-size:11px;">شهري</button>
+              </div>
+            </div>
+            <canvas id="lineChart" height="200"></canvas>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <span class="chart-title">توزيع العملاء</span>
+            </div>
+            <canvas id="donutChart" height="200"></canvas>
+            <div style="display:flex;flex-direction:column;gap:var(--space-2);margin-top:var(--space-4);">
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:var(--text-xs);">
+                <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;background:var(--gold-500);border-radius:2px;display:inline-block;"></span> نشطون</span>
+                <span style="color:var(--text-secondary);font-weight:600;">68%</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:var(--text-xs);">
+                <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;background:var(--gold-800);border-radius:2px;display:inline-block;"></span> غير نشطين</span>
+                <span style="color:var(--text-secondary);font-weight:600;">22%</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:var(--text-xs);">
+                <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;background:var(--black-400);border-radius:2px;display:inline-block;"></span> في انتظار التفعيل</span>
+                <span style="color:var(--text-secondary);font-weight:600;">10%</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ─── BOTTOM ROW ───────────────────────────────── -->
+        <div class="bottom-row">
+
+          <!-- Recent Activity -->
+          <div class="card">
+            <div class="chart-header">
+              <span class="chart-title">آخر النشاطات</span>
+              <a href="#" style="font-size:var(--text-xs);color:var(--gold-600);">عرض الكل</a>
+            </div>
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-dot"></div>
+                <div class="activity-text">تم إضافة عميل جديد: <strong style="color:var(--text-primary);">سارة الأحمد</strong></div>
+                <div class="activity-time">منذ 5 دقائق</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--info);"></div>
+                <div class="activity-text">تم إرسال رسالة جماعية لـ <strong style="color:var(--text-primary);">320 عميل</strong></div>
+                <div class="activity-time">منذ 18 دقيقة</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--success);"></div>
+                <div class="activity-text">تم تحديث صلاحيات المستخدم <strong style="color:var(--text-primary);">علي محمد</strong></div>
+                <div class="activity-time">منذ ساعة</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--warning);"></div>
+                <div class="activity-text">تم جدولة رسالة لـ <strong style="color:var(--text-primary);">يوم الإثنين 09:00</strong></div>
+                <div class="activity-time">منذ 2 ساعة</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot"></div>
+                <div class="activity-text">تم استيراد <strong style="color:var(--text-primary);">150 عميل</strong> من ملف Excel</div>
+                <div class="activity-time">منذ 4 ساعات</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Clients -->
+          <div class="card">
+            <div class="chart-header">
+              <span class="chart-title">أكثر العملاء تفاعلًا</span>
+              <a href="customers.html" style="font-size:var(--text-xs);color:var(--gold-600);">عرض الكل</a>
+            </div>
+            <div>
+              <div class="top-client-row">
+                <span class="client-rank">1</span>
+                <div class="client-avatar-sm">س</div>
+                <div style="flex:1;">
+                  <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">سالم العمري</div>
+                  <div style="font-size:var(--text-xs);color:var(--text-muted);">48 تفاعل هذا الشهر</div>
+                </div>
+                <span class="badge badge-success">نشط</span>
+              </div>
+              <div class="top-client-row">
+                <span class="client-rank">2</span>
+                <div class="client-avatar-sm">م</div>
+                <div style="flex:1;">
+                  <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">منيرة الجهني</div>
+                  <div style="font-size:var(--text-xs);color:var(--text-muted);">41 تفاعل هذا الشهر</div>
+                </div>
+                <span class="badge badge-success">نشط</span>
+              </div>
+              <div class="top-client-row">
+                <span class="client-rank">3</span>
+                <div class="client-avatar-sm">ف</div>
+                <div style="flex:1;">
+                  <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">فهد القرني</div>
+                  <div style="font-size:var(--text-xs);color:var(--text-muted);">37 تفاعل هذا الشهر</div>
+                </div>
+                <span class="badge badge-gold">VIP</span>
+              </div>
+              <div class="top-client-row">
+                <span class="client-rank">4</span>
+                <div class="client-avatar-sm">ن</div>
+                <div style="flex:1;">
+                  <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">نورة السهلي</div>
+                  <div style="font-size:var(--text-xs);color:var(--text-muted);">29 تفاعل هذا الشهر</div>
+                </div>
+                <span class="badge badge-success">نشط</span>
+              </div>
+              <div class="top-client-row">
+                <span class="client-rank">5</span>
+                <div class="client-avatar-sm">ع</div>
+                <div style="flex:1;">
+                  <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">عبدالله المطيري</div>
+                  <div style="font-size:var(--text-xs);color:var(--text-muted);">25 تفاعل هذا الشهر</div>
+                </div>
+                <span class="badge badge-warning">جديد</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div><!-- / page-content -->
+    </div><!-- / dashboard-content -->
+  </div><!-- / dashboard-layout -->
+
+  <!-- ─── NOTIFICATIONS PANEL ─────────────────────────────────── -->
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-header">
+      <span style="font-weight:600;font-size:var(--text-base);">الإشعارات</span>
+      <div style="display:flex;gap:var(--space-3);">
+        <button class="btn btn-ghost btn-sm" style="font-size:var(--text-xs);padding:4px 10px;">تعليم الكل كمقروء</button>
+        <button class="navbar-icon-btn" onclick="closeNotif()"><i class="fas fa-xmark"></i></button>
+      </div>
+    </div>
+
+    <div class="notif-item unread">
+      <div class="notif-icon"><i class="fas fa-user-plus"></i></div>
+      <div style="flex:1;">
+        <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);margin-bottom:2px;">عميل جديد مُسجَّل</div>
+        <div style="font-size:var(--text-xs);color:var(--text-muted);">انضمت سارة الأحمد للمنصة منذ قليل</div>
+      </div>
+      <span style="font-size:10px;color:var(--text-muted);">5د</span>
+    </div>
+    <div class="notif-item unread">
+      <div class="notif-icon"><i class="fas fa-paper-plane"></i></div>
+      <div style="flex:1;">
+        <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);margin-bottom:2px;">تم إرسال الحملة</div>
+        <div style="font-size:var(--text-xs);color:var(--text-muted);">وصلت الرسالة إلى 317/320 عميل</div>
+      </div>
+      <span style="font-size:10px;color:var(--text-muted);">18د</span>
+    </div>
+    <div class="notif-item">
+      <div class="notif-icon" style="background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.3);color:#93c5fd;"><i class="fas fa-shield-halved"></i></div>
+      <div style="flex:1;">
+        <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);margin-bottom:2px;">تحديث الصلاحيات</div>
+        <div style="font-size:var(--text-xs);color:var(--text-muted);">تم تعديل دور "المشرف" بنجاح</div>
+      </div>
+      <span style="font-size:10px;color:var(--text-muted);">1س</span>
+    </div>
+
+    <div style="padding:var(--space-4);text-align:center;border-top:1px solid var(--border-default);">
+      <a href="#" style="font-size:var(--text-sm);color:var(--gold-600);">عرض جميع الإشعارات</a>
+    </div>
+  </div>
+
+  <script>
+    // Charts
+    Chart.defaults.color = '#9a9a9a';
+    Chart.defaults.borderColor = 'rgba(212,175,55,0.1)';
+
+    // Line Chart
+    new Chart(document.getElementById('lineChart'), {
+      type: 'line',
+      data: {
+        labels: Array.from({length:30},(_,i)=>`${i+1}`),
+        datasets: [{
+          label: 'رسائل مرسلة',
+          data: [420,380,510,490,620,580,710,650,780,820,760,900,850,920,880,1020,980,1100,1050,1200,1180,1300,1250,1380,1350,1450,1420,1520,1480,1600],
+          borderColor: '#d4af37',
+          backgroundColor: 'rgba(212,175,55,0.08)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#d4af37',
+          pointRadius: 0,
+          pointHoverRadius: 5,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { rtl: true } },
+        scales: {
+          x: { grid: { color: 'rgba(212,175,55,0.05)' }, ticks: { maxTicksLimit: 8 } },
+          y: { grid: { color: 'rgba(212,175,55,0.05)' } }
+        }
+      }
+    });
+
+    // Donut Chart
+    new Chart(document.getElementById('donutChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['نشطون','غير نشطين','انتظار'],
+        datasets: [{
+          data: [68, 22, 10],
+          backgroundColor: ['#d4af37','#5c4701','#2e2e2e'],
+          borderColor: '#1e1e1e',
+          borderWidth: 3,
+          hoverOffset: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        cutout: '72%',
+        plugins: {
+          legend: { display: false },
+          tooltip: { rtl: true }
+        }
+      }
+    });
+
+    // Notifications
+    function toggleNotif(e) { e.preventDefault(); document.getElementById('notifPanel').classList.toggle('open'); }
+    function closeNotif()   { document.getElementById('notifPanel').classList.remove('open'); }
+
+    // Sidebar toggle (mobile)
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+    function updateMenuToggleVisibility() {
+      document.getElementById('menuToggle').style.display = window.innerWidth < 1024 ? 'flex' : 'none';
+    }
+
+    window.addEventListener('resize', updateMenuToggleVisibility);
+    updateMenuToggleVisibility();
+
+    // Tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        this.closest('.tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

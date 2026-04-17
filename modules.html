@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>الميزات والوحدات — MMM</title>
+  <link rel="stylesheet" href="assets/css/design-system.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-5); }
+    .module-card { background: var(--bg-card); border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: var(--space-6); }
+    .module-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
+    .module-title { font-family: var(--font-display); font-size: var(--text-xl); color: var(--text-primary); }
+    .module-desc { color: var(--text-muted); font-size: var(--text-sm); margin-bottom: var(--space-4); }
+    .module-actions { display: flex; gap: var(--space-3); }
+  </style>
+</head>
+<body>
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">M</div><span class="sidebar-logo-text">MMM</span></div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">الرئيسي</span>
+      <a href="dashboard.html" class="nav-item"><i class="nav-icon fas fa-chart-pie"></i><span>لوحة التحكم</span></a>
+      <a href="customers.html" class="nav-item"><i class="nav-icon fas fa-users"></i><span>إدارة العملاء</span></a>
+      <a href="messages.html" class="nav-item"><i class="nav-icon fas fa-comment-dots"></i><span>الرسائل</span></a>
+      <span class="nav-section-label">الإعدادات</span>
+      <a href="modules.html" class="nav-item active"><i class="nav-icon fas fa-cubes"></i><span>الميزات</span></a>
+      <a href="permissions.html" class="nav-item"><i class="nav-icon fas fa-shield-halved"></i><span>الصلاحيات</span></a>
+      <a href="settings.html" class="nav-item"><i class="nav-icon fas fa-gear"></i><span>الإعدادات</span></a>
+    </nav>
+  </aside>
+
+  <div class="dashboard-content">
+    <nav class="dashboard-navbar">
+      <div style="font-family:var(--font-display);font-size:var(--text-lg);"><i class="fas fa-cubes" style="color:var(--gold-600);margin-left:var(--space-2);"></i>إدارة الميزات</div>
+      <button class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> ميزة جديدة</button>
+    </nav>
+
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">الوحدات القابلة للتفعيل</h1>
+          <p class="page-subtitle">تحكم مباشر بميزات النظام بدون أي تعديل برمجي</p>
+        </div>
+      </div>
+
+      <div class="modules-grid">
+        <div class="module-card">
+          <div class="module-head">
+            <div class="module-title">لوحة التحكم</div>
+            <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div></label>
+          </div>
+          <div class="module-desc">الإحصائيات والمؤشرات والرسوم البيانية الرئيسية.</div>
+          <div class="module-actions"><button class="btn btn-outline btn-sm">تعديل</button></div>
+        </div>
+
+        <div class="module-card">
+          <div class="module-head">
+            <div class="module-title">إدارة العملاء</div>
+            <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div></label>
+          </div>
+          <div class="module-desc">CRUD كامل للعملاء وربط الحقول الديناميكية.</div>
+          <div class="module-actions"><button class="btn btn-outline btn-sm">تعديل</button></div>
+        </div>
+
+        <div class="module-card">
+          <div class="module-head">
+            <div class="module-title">الرسائل المجدولة</div>
+            <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div></label>
+          </div>
+          <div class="module-desc">إرسال فوري + جدولة يومية/أسبوعية/شهرية.</div>
+          <div class="module-actions"><button class="btn btn-outline btn-sm">تعديل</button></div>
+        </div>
+
+        <div class="module-card">
+          <div class="module-head">
+            <div class="module-title">واجهة API عامة</div>
+            <label class="toggle"><input type="checkbox" /><div class="toggle-track"></div></label>
+          </div>
+          <div class="module-desc">تمكين التكامل الخارجي مع أنظمة أخرى عبر REST API.</div>
+          <div class="module-actions"><button class="btn btn-outline btn-sm">تعديل</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

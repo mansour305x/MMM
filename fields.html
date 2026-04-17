@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>الحقول الديناميكية — MMM</title>
+  <link rel="stylesheet" href="assets/css/design-system.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .fields-layout { display: grid; grid-template-columns: 1fr 420px; gap: var(--space-6); }
+
+    .field-type-icon { width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--accent-muted); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; color: var(--gold-500); flex-shrink: 0; }
+
+    .field-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-3);
+      transition: all var(--transition-fast);
+      cursor: grab;
+    }
+
+    .field-row:active { cursor: grabbing; }
+
+    .field-row:hover {
+      border-color: var(--accent-border);
+      box-shadow: var(--shadow-gold);
+    }
+
+    .field-drag { color: var(--text-muted); cursor: grab; font-size: 14px; }
+
+    .field-info { flex: 1; }
+    .field-name { font-size: var(--text-sm); font-weight: 600; color: var(--text-primary); }
+    .field-meta { font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px; }
+
+    .type-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
+    }
+
+    .type-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-4);
+      background: var(--bg-card);
+      border: 2px solid var(--border-default);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-align: center;
+    }
+
+    .type-btn:hover { border-color: var(--accent-border); background: var(--accent-muted); }
+    .type-btn.selected { border-color: var(--gold-500); background: var(--accent-muted); }
+    .type-btn i { font-size: 22px; color: var(--gold-600); }
+    .type-btn span { font-size: var(--text-xs); color: var(--text-secondary); font-weight: 500; }
+
+    .options-list { display: flex; flex-direction: column; gap: var(--space-2); }
+    .option-item { display: flex; align-items: center; gap: var(--space-2); }
+    .option-item input { flex: 1; }
+
+    @media (max-width: 1024px) { .fields-layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="dashboard-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">M</div><span class="sidebar-logo-text">MMM</span></div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">الرئيسي</span>
+      <a href="dashboard.html" class="nav-item"><i class="nav-icon fas fa-chart-pie"></i><span>لوحة التحكم</span></a>
+      <a href="customers.html" class="nav-item"><i class="nav-icon fas fa-users"></i><span>إدارة العملاء</span></a>
+      <a href="messages.html" class="nav-item"><i class="nav-icon fas fa-comment-dots"></i><span>الرسائل</span></a>
+      <span class="nav-section-label">الإعدادات</span>
+      <a href="fields.html" class="nav-item active"><i class="nav-icon fas fa-sliders"></i><span>الحقول الديناميكية</span></a>
+      <a href="modules.html" class="nav-item"><i class="nav-icon fas fa-cubes"></i><span>الميزات</span></a>
+      <a href="permissions.html" class="nav-item"><i class="nav-icon fas fa-shield-halved"></i><span>الصلاحيات</span></a>
+      <a href="settings.html" class="nav-item"><i class="nav-icon fas fa-gear"></i><span>الإعدادات</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card"><div class="user-avatar">م</div><div style="flex:1;min-width:0;"><div style="font-size:var(--text-sm);font-weight:600;">محمد المنصور</div><div style="font-size:var(--text-xs);color:var(--text-muted);">admin@mmm.com</div></div></div>
+    </div>
+  </aside>
+
+  <div class="dashboard-content">
+    <nav class="dashboard-navbar">
+      <div style="font-family:var(--font-display);font-size:var(--text-lg);color:var(--text-secondary);">
+        <i class="fas fa-sliders" style="color:var(--gold-600);margin-left:var(--space-2);"></i>
+        الحقول الديناميكية
+      </div>
+      <div class="navbar-actions">
+        <button class="navbar-icon-btn"><i class="fas fa-bell"></i><span class="notification-dot"></span></button>
+        <div class="user-avatar" style="width:34px;height:34px;font-size:var(--text-xs);">م</div>
+      </div>
+    </nav>
+
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">الحقول الديناميكية</h1>
+          <p class="page-subtitle">أنشئ حقولاً مخصصة لبيانات عملائك وخصّصها بحرية كاملة</p>
+        </div>
+        <button class="btn btn-primary" onclick="toggleAddPanel()">
+          <i class="fas fa-plus"></i> حقل جديد
+        </button>
+      </div>
+
+      <div class="fields-layout">
+
+        <!-- LEFT: Fields List -->
+        <div>
+          <!-- Stats row -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4);margin-bottom:var(--space-6);">
+            <div class="card-stat" style="text-align:center;">
+              <div style="font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--gold-400);">12</div>
+              <div style="font-size:var(--text-xs);color:var(--text-muted);margin-top:4px;">إجمالي الحقول</div>
+            </div>
+            <div class="card-stat" style="text-align:center;">
+              <div style="font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--success);">10</div>
+              <div style="font-size:var(--text-xs);color:var(--text-muted);margin-top:4px;">حقول مفعّلة</div>
+            </div>
+            <div class="card-stat" style="text-align:center;">
+              <div style="font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--text-muted);">2</div>
+              <div style="font-size:var(--text-xs);color:var(--text-muted);margin-top:4px;">حقول معطّلة</div>
+            </div>
+          </div>
+
+          <!-- Search -->
+          <div class="input-group" style="margin-bottom:var(--space-5);">
+            <input type="text" class="form-control" placeholder="ابحث عن حقل..." style="background:var(--bg-card);" />
+            <span class="input-icon"><i class="fas fa-search"></i></span>
+          </div>
+
+          <!-- Fields List -->
+          <div id="fieldsList">
+
+            <div class="field-row">
+              <i class="field-drag fas fa-grip-vertical"></i>
+              <div class="field-type-icon"><i class="fas fa-font"></i></div>
+              <div class="field-info">
+                <div class="field-name">الاسم الكامل</div>
+                <div class="field-meta">نص · مطلوب · يظهر في البطاقة</div>
+              </div>
+              <span class="badge badge-success">مفعّل</span>
+              <span class="badge badge-gold">افتراضي</span>
+              <div class="table-actions">
+                <div class="action-btn"><i class="fas fa-pen"></i></div>
+                <div class="action-btn delete"><i class="fas fa-trash"></i></div>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <i class="field-drag fas fa-grip-vertical"></i>
+              <div class="field-type-icon"><i class="fas fa-envelope"></i></div>
+              <div class="field-info">
+                <div class="field-name">البريد الإلكتروني</div>
+                <div class="field-meta">بريد · مطلوب · فريد</div>
+              </div>
+              <span class="badge badge-success">مفعّل</span>
+              <span class="badge badge-gold">افتراضي</span>
+              <div class="table-actions">
+                <div class="action-btn"><i class="fas fa-pen"></i></div>
+                <div class="action-btn delete"><i class="fas fa-trash"></i></div>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <i class="field-drag fas fa-grip-vertical"></i>
+              <div class="field-type-icon"><i class="fas fa-phone"></i></div>
+              <div class="field-info">
+                <div class="field-name">رقم الهاتف</div>
+                <div class="field-meta">هاتف · مطلوب</div>
+              </div>
+              <span class="badge badge-success">مفعّل</span>
+              <div class="table-actions">
+                <div class="action-btn"><i class="fas fa-pen"></i></div>
+                <div class="action-btn delete"><i class="fas fa-trash"></i></div>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <i class="field-drag fas fa-grip-vertical"></i>
+              <div class="field-type-icon"><i class="fas fa-calendar"></i></div>
+              <div class="field-info">
+                <div class="field-name">تاريخ الميلاد</div>
+                <div class="field-meta">تاريخ · اختياري</div>
+              </div>
+              <span class="badge badge-success">مفعّل</span>
+              <div class="table-actions">
+                <div class="action-btn"><i class="fas fa-pen"></i></div>
+                <div class="action-btn delete"><i class="fas fa-trash"></i></div>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <i class="field-drag fas fa-grip-vertical"></i>
+              <div class="field-type-icon"><i class="fas fa-list-ul"></i></div>
+              <div class="field-info">
+                <div class="field-name">المنطقة الجغرافية</div>
+                <div class="field-meta">قائمة منسدلة · 14 خيار</div>
+              </div>
+              <span class="badge badge-success">مفعّل</span>
+              <div class="table-actions">
+                <div class="action-btn"><i class="fas fa-pen"></i></div>
+                <div class="action-btn delete"><i class="fas fa-trash"></i></div>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <i class="field-drag fas fa-grip-vertical"></i>
+              <div class="field-type-icon"><i class="fas fa-hashtag"></i></div>
+              <div class="field-info">
+                <div class="field-name">رقم العضوية</div>
+                <div class="field-meta">رقم · تلقائي التوليد</div>
+              </div>
+              <span class="badge badge-success">مفعّل</span>
+              <div class="table-actions">
+                <div class="action-btn"><i class="fas fa-pen"></i></div>
+                <div class="action-btn delete"><i class="fas fa-trash"></i></div>
+              </div>
+            </div>
+
+            <div class="field-row" style="opacity:0.6;">
+              <i class="field-drag fas fa-grip-vertical"></i>
+              <div class="field-type-icon" style="opacity:0.5;"><i class="fas fa-toggle-on"></i></div>
+              <div class="field-info">
+                <div class="field-name">مشترك في النشرة</div>
+                <div class="field-meta">نعم/لا · اختياري</div>
+              </div>
+              <span class="badge badge-danger">معطّل</span>
+              <div class="table-actions">
+                <div class="action-btn"><i class="fas fa-pen"></i></div>
+                <div class="action-btn delete"><i class="fas fa-trash"></i></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- RIGHT: Add Field Panel -->
+        <div id="addFieldPanel">
+          <div class="card" style="position:sticky;top:calc(var(--navbar-height) + var(--space-6));">
+            <div style="margin-bottom:var(--space-6);">
+              <h3 style="font-family:var(--font-display);font-size:var(--text-xl);color:var(--gold-400);margin-bottom:var(--space-1);">
+                <i class="fas fa-plus-circle"></i> إضافة حقل جديد
+              </h3>
+              <p style="font-size:var(--text-xs);color:var(--text-muted);">اختر نوع الحقل وعيّن خصائصه</p>
+            </div>
+
+            <!-- Field Types -->
+            <div style="margin-bottom:var(--space-5);">
+              <div class="form-label" style="margin-bottom:var(--space-3);">نوع الحقل</div>
+              <div class="type-grid">
+                <div class="type-btn selected" onclick="selectType(this)"><i class="fas fa-font"></i><span>نص</span></div>
+                <div class="type-btn" onclick="selectType(this)"><i class="fas fa-hashtag"></i><span>رقم</span></div>
+                <div class="type-btn" onclick="selectType(this)"><i class="fas fa-envelope"></i><span>بريد</span></div>
+                <div class="type-btn" onclick="selectType(this)"><i class="fas fa-phone"></i><span>هاتف</span></div>
+                <div class="type-btn" onclick="selectType(this)"><i class="fas fa-calendar"></i><span>تاريخ</span></div>
+                <div class="type-btn" onclick="selectType(this)"><i class="fas fa-list-ul"></i><span>قائمة</span></div>
+                <div class="type-btn" onclick="selectType(this)"><i class="fas fa-check-square"></i><span>مربع</span></div>
+                <div class="type-btn" onclick="selectType(this)"><i class="fas fa-align-right"></i><span>نص طويل</span></div>
+                <div class="type-btn" onclick="selectType(this)"><i class="fas fa-link"></i><span>رابط</span></div>
+              </div>
+            </div>
+
+            <form onsubmit="return false;" style="display:flex;flex-direction:column;gap:var(--space-4);">
+              <div class="form-group">
+                <label class="form-label">اسم الحقل <span class="required">*</span></label>
+                <input type="text" class="form-control" placeholder="مثال: تاريخ الميلاد" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">المعرّف الداخلي</label>
+                <input type="text" class="form-control" placeholder="birth_date" style="direction:ltr;" />
+                <span style="font-size:11px;color:var(--text-muted);">أحرف إنجليزية وأرقام وشرطة سفلية فقط</span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">نص التلميح (Placeholder)</label>
+                <input type="text" class="form-control" placeholder="مثال: أدخل تاريخ الميلاد..." />
+              </div>
+
+              <!-- List options (shown when type = list) -->
+              <div id="listOptions" style="display:none;">
+                <div class="form-label" style="margin-bottom:var(--space-3);">خيارات القائمة</div>
+                <div class="options-list" id="optionsList">
+                  <div class="option-item">
+                    <input type="text" class="form-control" placeholder="خيار 1" style="flex:1;" />
+                    <button type="button" class="action-btn delete"><i class="fas fa-minus"></i></button>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-outline btn-sm" style="margin-top:var(--space-3);width:100%;" onclick="addOption()">
+                  <i class="fas fa-plus"></i> إضافة خيار
+                </button>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
+                <div style="display:flex;align-items:center;gap:var(--space-3);">
+                  <label class="toggle">
+                    <input type="checkbox" checked />
+                    <div class="toggle-track"></div>
+                  </label>
+                  <span style="font-size:var(--text-sm);color:var(--text-secondary);">مطلوب</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--space-3);">
+                  <label class="toggle">
+                    <input type="checkbox" />
+                    <div class="toggle-track"></div>
+                  </label>
+                  <span style="font-size:var(--text-sm);color:var(--text-secondary);">فريد</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--space-3);">
+                  <label class="toggle">
+                    <input type="checkbox" checked />
+                    <div class="toggle-track"></div>
+                  </label>
+                  <span style="font-size:var(--text-sm);color:var(--text-secondary);">يظهر في البطاقة</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--space-3);">
+                  <label class="toggle">
+                    <input type="checkbox" checked />
+                    <div class="toggle-track"></div>
+                  </label>
+                  <span style="font-size:var(--text-sm);color:var(--text-secondary);">قابل للتصفية</span>
+                </div>
+              </div>
+
+              <div style="display:flex;gap:var(--space-3);padding-top:var(--space-4);border-top:1px solid var(--border-default);">
+                <button type="button" class="btn btn-ghost" style="flex:1;">إلغاء</button>
+                <button type="submit" class="btn btn-primary" style="flex:2;">
+                  <i class="fas fa-check"></i> حفظ الحقل
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function selectType(el) {
+    el.closest('.type-grid').querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('listOptions').style.display = el.querySelector('span').textContent === 'قائمة' ? 'block' : 'none';
+  }
+
+  function addOption() {
+    const list = document.getElementById('optionsList');
+    const count = list.children.length + 1;
+    const div = document.createElement('div');
+    div.className = 'option-item';
+    div.innerHTML = `<input type="text" class="form-control" placeholder="خيار ${count}" style="flex:1;" /><button type="button" class="action-btn delete" onclick="this.parentElement.remove()"><i class="fas fa-minus"></i></button>`;
+    list.appendChild(div);
+  }
+</script>
+</body>
+</html>

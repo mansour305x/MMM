@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MMM — منصة إدارة العملاء الذكية</title>
+  <link rel="stylesheet" href="assets/css/design-system.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    /* ─── LANDING SPECIFIC ──────────────────────────────────────── */
+
+    /* NAVBAR */
+    .land-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 0 var(--space-8);
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all var(--transition-base);
+    }
+
+    .land-nav.scrolled {
+      background: rgba(8,8,8,0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-default);
+    }
+
+    .land-nav .logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .land-nav .logo-mark {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--gold-700), var(--gold-400));
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: var(--text-xl);
+      color: var(--black-900);
+      box-shadow: var(--shadow-gold);
+    }
+
+    .land-nav .logo-name {
+      font-family: var(--font-display);
+      font-size: var(--text-2xl);
+      font-weight: 700;
+    }
+
+    .land-nav .logo-name span { color: var(--gold-500); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: var(--space-8);
+    }
+
+    .nav-links a {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: color var(--transition-fast);
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0; right: 0;
+      height: 1px;
+      background: var(--gold-500);
+      transform: scaleX(0);
+      transition: transform var(--transition-fast);
+    }
+
+    .nav-links a:hover { color: var(--gold-400); }
+    .nav-links a:hover::after { transform: scaleX(1); }
+
+    .nav-cta { display: flex; align-items: center; gap: var(--space-3); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      padding: 120px var(--space-8) var(--space-20);
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(212,175,55,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 50% at 80% 80%, rgba(212,175,55,0.06) 0%, transparent 60%),
+        var(--black-rich);
+    }
+
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(212,175,55,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(212,175,55,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 860px;
+    }
+
+    .hero-eyebrow {
+      margin-bottom: var(--space-6);
+      animation: fadeIn 0.6s ease 0.1s both;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 900;
+      line-height: 1.15;
+      margin-bottom: var(--space-6);
+      color: var(--text-primary);
+      animation: fadeIn 0.6s ease 0.2s both;
+    }
+
+    .hero-title .line-gold {
+      display: block;
+      background: linear-gradient(135deg, var(--gold-300) 0%, var(--gold-500) 50%, var(--gold-700) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-desc {
+      font-size: var(--text-lg);
+      color: var(--text-secondary);
+      max-width: 620px;
+      margin: 0 auto var(--space-10);
+      line-height: 1.8;
+      animation: fadeIn 0.6s ease 0.3s both;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+      animation: fadeIn 0.6s ease 0.4s both;
+    }
+
+    .hero-stats {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-12);
+      margin-top: var(--space-16);
+      padding-top: var(--space-10);
+      border-top: 1px solid var(--border-default);
+      animation: fadeIn 0.6s ease 0.5s both;
+    }
+
+    .hero-stat-value {
+      font-family: var(--font-display);
+      font-size: var(--text-4xl);
+      font-weight: 700;
+      color: var(--gold-400);
+      line-height: 1;
+    }
+
+    .hero-stat-label {
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+      margin-top: var(--space-2);
+    }
+
+    /* FEATURES SECTION */
+    .section {
+      padding: var(--space-24) var(--space-8);
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: var(--space-16);
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 4vw, 3rem);
+      font-weight: 700;
+      margin: var(--space-4) 0;
+    }
+
+    .section-desc {
+      font-size: var(--text-base);
+      color: var(--text-secondary);
+      max-width: 560px;
+      margin: 0 auto;
+      line-height: 1.8;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-6);
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      transition: all var(--transition-base);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-500), transparent);
+      transform: scaleX(0);
+      transition: transform var(--transition-base);
+    }
+
+    .feature-card:hover {
+      border-color: var(--accent-border);
+      box-shadow: var(--shadow-gold);
+      transform: translateY(-4px);
+    }
+
+    .feature-card:hover::before { transform: scaleX(1); }
+
+    .feature-icon {
+      width: 56px; height: 56px;
+      background: var(--accent-muted);
+      border: 1px solid var(--accent-border);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: var(--gold-500);
+      margin-bottom: var(--space-5);
+    }
+
+    .feature-title {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 600;
+      margin-bottom: var(--space-3);
+      color: var(--text-primary);
+    }
+
+    .feature-desc {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      line-height: 1.8;
+    }
+
+    /* PREVIEW SECTION */
+    .preview-section {
+      padding: var(--space-24) var(--space-8);
+      background: var(--bg-secondary);
+    }
+
+    .preview-window {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-gold-lg);
+    }
+
+    .preview-titlebar {
+      background: var(--bg-secondary);
+      padding: 14px var(--space-5);
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      border-bottom: 1px solid var(--border-default);
+    }
+
+    .preview-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-red   { background: #ef4444; }
+    .dot-yellow{ background: var(--gold-500); }
+    .dot-green { background: #22c55e; }
+
+    .preview-url-bar {
+      flex: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-full);
+      padding: 5px 16px;
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      max-width: 300px;
+      margin: 0 auto;
+    }
+
+    .preview-body {
+      padding: var(--space-6);
+      min-height: 400px;
+      background: var(--bg-primary);
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: var(--space-4);
+    }
+
+    .preview-sidebar-mock {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .mock-nav-item {
+      height: 36px;
+      background: var(--bg-card);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 0 var(--space-3);
+    }
+
+    .mock-nav-item.active-mock { background: var(--accent-muted); border: 1px solid var(--accent-border); }
+
+    .mock-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); }
+    .mock-dot.gold { background: var(--gold-500); }
+    .mock-line { height: 6px; flex: 1; background: var(--bg-card-hover); border-radius: 3px; }
+    .mock-line.short { flex: 0.6; }
+
+    .preview-main-mock {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    .mock-stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-3);
+    }
+
+    .mock-stat {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      height: 80px;
+    }
+
+    .mock-stat.gold-border { border-color: var(--accent-border); }
+    .mock-chart { background: var(--bg-tertiary); border: 1px solid var(--border-default); border-radius: var(--radius-md); height: 200px; }
+
+    /* PRICING SECTION */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-6);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .pricing-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      text-align: center;
+      transition: all var(--transition-base);
+      position: relative;
+    }
+
+    .pricing-card.featured {
+      border-color: var(--accent-border);
+      background: linear-gradient(180deg, rgba(212,175,55,0.08) 0%, var(--bg-card) 100%);
+      box-shadow: var(--shadow-gold);
+    }
+
+    .pricing-featured-badge {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--gold-600), var(--gold-400));
+      color: var(--black-900);
+      padding: 4px 16px;
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .pricing-plan { font-size: var(--text-sm); color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
+    .pricing-price {
+      font-family: var(--font-display);
+      font-size: var(--text-5xl);
+      font-weight: 900;
+      color: var(--gold-400);
+      margin: var(--space-4) 0 var(--space-2);
+    }
+    .pricing-price sup { font-size: var(--text-xl); vertical-align: top; margin-top: var(--space-3); display: inline-block; }
+    .pricing-period { font-size: var(--text-sm); color: var(--text-muted); }
+
+    .pricing-features {
+      margin: var(--space-6) 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      text-align: right;
+    }
+
+    .pricing-feature {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+    }
+
+    .pricing-feature i { color: var(--gold-500); font-size: 12px; }
+
+    /* CTA SECTION */
+    .cta-section {
+      padding: var(--space-24) var(--space-8);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 80% at 50% 50%, rgba(212,175,55,0.08) 0%, transparent 70%);
+    }
+
+    .cta-content { position: relative; z-index: 1; }
+
+    .cta-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 900;
+      margin-bottom: var(--space-5);
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-default);
+      padding: var(--space-16) var(--space-8) var(--space-8);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: var(--space-10);
+      margin-bottom: var(--space-12);
+    }
+
+    .footer-brand p {
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+      margin: var(--space-4) 0 var(--space-5);
+      line-height: 1.8;
+    }
+
+    .social-links { display: flex; gap: var(--space-3); }
+
+    .social-link {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: all var(--transition-fast);
+    }
+
+    .social-link:hover {
+      border-color: var(--accent-border);
+      color: var(--gold-400);
+      background: var(--accent-muted);
+    }
+
+    .footer-col-title {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-5);
+      font-size: var(--text-sm);
+    }
+
+    .footer-links { display: flex; flex-direction: column; gap: var(--space-3); }
+
+    .footer-links a {
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+      transition: color var(--transition-fast);
+    }
+
+    .footer-links a:hover { color: var(--gold-400); }
+
+    .footer-bottom {
+      padding-top: var(--space-8);
+      border-top: 1px solid var(--border-default);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-bottom p { font-size: var(--text-xs); color: var(--text-muted); }
+    .footer-bottom span { color: var(--gold-600); }
+
+    @media (max-width: 1024px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .pricing-grid  { grid-template-columns: 1fr; max-width: 380px; }
+      .footer-grid   { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .features-grid { grid-template-columns: 1fr; }
+      .nav-links, .nav-cta .btn-outline { display: none; }
+      .hero-stats { gap: var(--space-8); flex-wrap: wrap; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .preview-body { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════
+       NAVIGATION
+  ═══════════════════════════════════════════════ -->
+  <nav class="land-nav" id="mainNav">
+    <div class="logo">
+      <div class="logo-mark">M</div>
+      <span class="logo-name"><span>M</span>MM</span>
+    </div>
+
+    <div class="nav-links">
+      <a href="#features">الميزات</a>
+      <a href="#preview">المنصة</a>
+      <a href="#pricing">الأسعار</a>
+      <a href="#about">من نحن</a>
+    </div>
+
+    <div class="nav-cta">
+      <a href="login.html" class="btn btn-outline btn-sm">تسجيل الدخول</a>
+      <a href="register.html" class="btn btn-primary btn-sm">ابدأ مجانًا</a>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════
+       HERO
+  ═══════════════════════════════════════════════ -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <span class="section-label">
+          <i class="fas fa-crown"></i>
+          منصة الإدارة الذكية #1
+        </span>
+      </div>
+
+      <h1 class="hero-title">
+        أدر عملاءك بأسلوب
+        <span class="line-gold">ملكي وذهبي</span>
+      </h1>
+
+      <p class="hero-desc">
+        منصة MMM — الحل الأكثر تطوراً لإدارة العملاء، إرسال الرسائل، وتتبع الأداء.
+        كل ما تحتاجه في مكان واحد مع تصميم فاخر لا مثيل له.
+      </p>
+
+      <div class="hero-actions">
+        <a href="register.html" class="btn btn-primary btn-lg">
+          <i class="fas fa-rocket"></i>
+          ابدأ تجربتك المجانية
+        </a>
+        <a href="#preview" class="btn btn-outline btn-lg">
+          <i class="fas fa-play-circle"></i>
+          شاهد العرض التوضيحي
+        </a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="text-center">
+          <div class="hero-stat-value">+50K</div>
+          <div class="hero-stat-label">عميل مُدار</div>
+        </div>
+        <div style="width:1px; height:40px; background: var(--border-default);"></div>
+        <div class="text-center">
+          <div class="hero-stat-value">99.9%</div>
+          <div class="hero-stat-label">وقت التشغيل</div>
+        </div>
+        <div style="width:1px; height:40px; background: var(--border-default);"></div>
+        <div class="text-center">
+          <div class="hero-stat-value">+2M</div>
+          <div class="hero-stat-label">رسالة أُرسلت</div>
+        </div>
+        <div style="width:1px; height:40px; background: var(--border-default);"></div>
+        <div class="text-center">
+          <div class="hero-stat-value">150+</div>
+          <div class="hero-stat-label">شركة تثق بنا</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       FEATURES
+  ═══════════════════════════════════════════════ -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label"><i class="fas fa-star"></i> قدراتنا</span>
+        <h2 class="section-title gradient-text">كل ما تحتاجه في منصة واحدة</h2>
+        <p class="section-desc">
+          أدوات متكاملة مصممة لتمنحك سيطرة كاملة على عمليات إدارة العملاء والتواصل معهم.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-users"></i></div>
+          <h3 class="feature-title">إدارة العملاء</h3>
+          <p class="feature-desc">قاعدة بيانات ذكية لعملائك مع حقول ديناميكية قابلة للتخصيص الكامل حسب احتياجاتك.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-comment-dots"></i></div>
+          <h3 class="feature-title">الرسائل الذكية</h3>
+          <p class="feature-desc">إرسال رسائل فردية وجماعية مع جدولة زمنية وتتبع حالة الإرسال بشكل لحظي.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+          <h3 class="feature-title">تحليلات متقدمة</h3>
+          <p class="feature-desc">لوحة إحصاءات تفاعلية تمنحك رؤية 360° على أداء أعمالك وتفاعل عملائك.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-sliders"></i></div>
+          <h3 class="feature-title">حقول ديناميكية</h3>
+          <p class="feature-desc">أنشئ حقلاً مخصصاً لكل نوع من بيانات العملاء — نصوص، أرقام، تواريخ، قوائم.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-shield-halved"></i></div>
+          <h3 class="feature-title">نظام صلاحيات</h3>
+          <p class="feature-desc">تحكم دقيق في صلاحيات كل مستخدم وكل دور داخل فريق العمل.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-bell"></i></div>
+          <h3 class="feature-title">إشعارات فورية</h3>
+          <p class="feature-desc">ابقَ على اطلاع دائم بكل ما يجري في منصتك من خلال نظام إشعارات ذكي ومباشر.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       PREVIEW
+  ═══════════════════════════════════════════════ -->
+  <section class="preview-section" id="preview">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label"><i class="fas fa-desktop"></i> معاينة المنصة</span>
+        <h2 class="section-title">واجهة فاخرة. أداء استثنائي.</h2>
+      </div>
+
+      <div class="preview-window">
+        <div class="preview-titlebar">
+          <div class="preview-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <div class="preview-url-bar">app.mmm-platform.com/dashboard</div>
+        </div>
+        <div class="preview-body">
+          <div class="preview-sidebar-mock">
+            <div style="height:40px; background: var(--accent-muted); border-radius: var(--radius-sm); border: 1px solid var(--accent-border); margin-bottom: var(--space-4);"></div>
+            <div class="mock-nav-item active-mock"><div class="mock-dot gold"></div><div class="mock-line"></div></div>
+            <div class="mock-nav-item"><div class="mock-dot"></div><div class="mock-line"></div></div>
+            <div class="mock-nav-item"><div class="mock-dot"></div><div class="mock-line"></div></div>
+            <div class="mock-nav-item"><div class="mock-dot"></div><div class="mock-line short"></div></div>
+            <div class="mock-nav-item"><div class="mock-dot"></div><div class="mock-line"></div></div>
+            <div class="mock-nav-item"><div class="mock-dot"></div><div class="mock-line short"></div></div>
+          </div>
+          <div class="preview-main-mock">
+            <div class="mock-stat-row">
+              <div class="mock-stat gold-border"></div>
+              <div class="mock-stat"></div>
+              <div class="mock-stat"></div>
+              <div class="mock-stat"></div>
+            </div>
+            <div class="mock-chart"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       PRICING
+  ═══════════════════════════════════════════════ -->
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label"><i class="fas fa-gem"></i> الأسعار</span>
+        <h2 class="section-title">خطط تناسب كل طموح</h2>
+      </div>
+
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <div class="pricing-plan">أساسي</div>
+          <div class="pricing-price"><sup>$</sup>29</div>
+          <div class="pricing-period">/ شهرياً</div>
+          <div class="pricing-features">
+            <div class="pricing-feature"><i class="fas fa-check"></i><span>500 عميل</span></div>
+            <div class="pricing-feature"><i class="fas fa-check"></i><span>1,000 رسالة/شهر</span></div>
+            <div class="pricing-feature"><i class="fas fa-check"></i><span>10 حقول ديناميكية</span></div>
+            <div class="pricing-feature"><i class="fas fa-check"></i><span>مستخدمين 2</span></div>
+          </div>
+          <a href="register.html" class="btn btn-outline w-full">ابدأ الآن</a>
+        </div>
+
+        <div class="pricing-card featured">
+          <div class="pricing-featured-badge"><i class="fas fa-crown"></i> الأكثر طلبًا</div>
+          <div class="pricing-plan">احترافي</div>
+          <div class="pricing-price"><sup>$</sup>79</div>
+          <div class="pricing-period">/ شهرياً</div>
+          <div class="pricing-features">
+            <div class="pricing-feature"><i class="fas fa-check"></i><span>عملاء غير محدودين</span></div>
+            <div class="pricing-feature"><i class="fas fa-check"></i><span>10,000 رسالة/شهر</span></div>
+            <div class="pricing-feature"><i class="fas fa-check"></i><span>حقول ديناميكية غير محدودة</span></div>
+            <div class="pricing-feature"><i class="fas fa-check"></i><span>مستخدمين 10</span></div>
+            <div class="pricing-feature"><i class="fas fa-check"></i><span>تقارير متقدمة</span></div>
+          </div>
+          <a href="register.html" class="btn btn-primary w-full">ابدأ الآن</a>
+        </div>
+
+        <div class="pricing-card">
+          <div class="pricing-plan">مؤسسي</div>
+          <div class="pricing-price"><sup>$</sup>199</div>
+          <div class="pricing-period">/ شهرياً</div>
+          <div class="pricing-features">
+            <div class="pricing-feature"><i class="fas fa-check"></i><span>كل شيء غير محدود</span></div>
+            <div class="pricing-feature"><i class="fas fa-check"></i><span>API كاملة</span></div>
+            <div class="pricing-feature"><i class="fas fa-check"></i><span>دعم مخصص 24/7</span></div>
+            <div class="pricing-feature"><i class="fas fa-check"></i><span>White Label</span></div>
+          </div>
+          <a href="register.html" class="btn btn-outline w-full">تواصل معنا</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       CTA
+  ═══════════════════════════════════════════════ -->
+  <section class="cta-section">
+    <div class="cta-content">
+      <span class="section-label"><i class="fas fa-bolt"></i> ابدأ اليوم</span>
+      <h2 class="cta-title">
+        جاهز لتحويل<br>
+        <span class="gradient-text">طريقة إدارة أعمالك؟</span>
+      </h2>
+      <p style="color: var(--text-secondary); font-size: var(--text-lg); margin: var(--space-5) 0 var(--space-8); max-width: 480px; margin-left: auto; margin-right: auto;">
+        انضم إلى أكثر من 150 شركة تثق بمنصة MMM لإدارة عملائها.
+      </p>
+      <a href="register.html" class="btn btn-primary btn-lg">
+        <i class="fas fa-arrow-left"></i>
+        أنشئ حسابك المجاني الآن
+      </a>
+      <p style="margin-top: var(--space-4); font-size: var(--text-xs); color: var(--text-muted);">
+        لا حاجة لبطاقة ائتمان · 14 يوم تجربة مجانية
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════════ -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo">
+            <div class="logo-mark">M</div>
+            <span class="logo-name"><span>M</span>MM</span>
+          </div>
+          <p>منصة MMM هي الحل الأمثل لإدارة العملاء والتواصل معهم بأسلوب ذكي واحترافي.</p>
+          <div class="social-links">
+            <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+
+        <div>
+          <div class="footer-col-title">المنصة</div>
+          <div class="footer-links">
+            <a href="#">الميزات</a>
+            <a href="#">الأسعار</a>
+            <a href="#">التحديثات</a>
+            <a href="#">خارطة الطريق</a>
+          </div>
+        </div>
+
+        <div>
+          <div class="footer-col-title">الشركة</div>
+          <div class="footer-links">
+            <a href="#">من نحن</a>
+            <a href="#">المدونة</a>
+            <a href="#">الشركاء</a>
+            <a href="#">وظائف</a>
+          </div>
+        </div>
+
+        <div>
+          <div class="footer-col-title">الدعم</div>
+          <div class="footer-links">
+            <a href="#">مركز المساعدة</a>
+            <a href="#">التوثيق</a>
+            <a href="#">تواصل معنا</a>
+            <a href="#">سياسة الخصوصية</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© 2025 MMM Platform — جميع الحقوق محفوظة</p>
+        <p>صُنع بـ <span>♥</span> للشركات الطموحة</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Navbar scroll effect
+    const nav = document.getElementById('mainNav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 40);
+    });
+  </script>
+</body>
+</html>

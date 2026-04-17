@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>الصلاحيات والأدوار — MMM</title>
+  <link rel="stylesheet" href="assets/css/design-system.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .perms-layout { display: grid; grid-template-columns: 320px 1fr; gap: var(--space-6); }
+
+    /* Role Card */
+    .role-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      padding: var(--space-4) var(--space-5);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+
+    .role-card:hover { border-color: var(--accent-border); }
+    .role-card.selected { border-color: var(--gold-500); background: var(--accent-muted); }
+
+    .role-icon {
+      width: 40px; height: 40px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .role-name   { font-size: var(--text-sm); font-weight: 600; color: var(--text-primary); }
+    .role-count  { font-size: 11px; color: var(--text-muted); }
+
+    /* Permission Matrix */
+    .perm-group {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-4);
+      overflow: hidden;
+    }
+
+    .perm-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-4) var(--space-5);
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border-default);
+      cursor: pointer;
+    }
+
+    .perm-group-title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .perm-group-icon {
+      width: 32px; height: 32px;
+      border-radius: var(--radius-sm);
+      background: var(--accent-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-500);
+      font-size: 14px;
+    }
+
+    .perm-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-3) var(--space-5);
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background var(--transition-fast);
+    }
+
+    .perm-item:last-child { border-bottom: none; }
+    .perm-item:hover { background: rgba(212,175,55,0.03); }
+
+    .perm-name  { font-size: var(--text-sm); color: var(--text-secondary); }
+    .perm-desc  { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    .perm-checkboxes {
+      display: flex;
+      align-items: center;
+      gap: var(--space-5);
+    }
+
+    .perm-check-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .perm-check-label input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--gold-500);
+      cursor: pointer;
+    }
+
+    /* Users in Role */
+    .user-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-full);
+      padding: 4px 10px;
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
+      margin: 4px;
+    }
+
+    .user-chip .chip-avatar {
+      width: 20px; height: 20px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--gold-700), var(--gold-500));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--black-900);
+    }
+
+    .role-color-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+    }
+
+    .role-color-dot.selected {
+      border-width: 3px;
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 1024px) { .perms-layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="dashboard-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">M</div><span class="sidebar-logo-text">MMM</span></div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">الرئيسي</span>
+      <a href="dashboard.html" class="nav-item"><i class="nav-icon fas fa-chart-pie"></i><span>لوحة التحكم</span></a>
+      <a href="customers.html" class="nav-item"><i class="nav-icon fas fa-users"></i><span>إدارة العملاء</span></a>
+      <a href="messages.html" class="nav-item"><i class="nav-icon fas fa-comment-dots"></i><span>الرسائل</span></a>
+      <span class="nav-section-label">الإعدادات</span>
+      <a href="fields.html" class="nav-item"><i class="nav-icon fas fa-sliders"></i><span>الحقول الديناميكية</span></a>
+      <a href="modules.html" class="nav-item"><i class="nav-icon fas fa-cubes"></i><span>الميزات</span></a>
+      <a href="permissions.html" class="nav-item active"><i class="nav-icon fas fa-shield-halved"></i><span>الصلاحيات</span></a>
+      <a href="settings.html" class="nav-item"><i class="nav-icon fas fa-gear"></i><span>الإعدادات</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card"><div class="user-avatar">م</div><div style="flex:1;min-width:0;"><div style="font-size:var(--text-sm);font-weight:600;">محمد المنصور</div><div style="font-size:var(--text-xs);color:var(--text-muted);">admin@mmm.com</div></div></div>
+    </div>
+  </aside>
+
+  <div class="dashboard-content">
+    <nav class="dashboard-navbar">
+      <div style="font-family:var(--font-display);font-size:var(--text-lg);color:var(--text-secondary);">
+        <i class="fas fa-shield-halved" style="color:var(--gold-600);margin-left:var(--space-2);"></i>
+        الصلاحيات والأدوار
+      </div>
+      <div class="navbar-actions">
+        <button class="btn btn-primary btn-sm" onclick="document.getElementById('addRoleModal').classList.add('open')">
+          <i class="fas fa-plus"></i> دور جديد
+        </button>
+        <div class="user-avatar" style="width:34px;height:34px;font-size:var(--text-xs);margin-right:var(--space-3);">م</div>
+      </div>
+    </nav>
+
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">إدارة الصلاحيات</h1>
+          <p class="page-subtitle">حدّد صلاحيات كل دور وتحكم في وصول فريق العمل</p>
+        </div>
+      </div>
+
+      <div class="perms-layout">
+
+        <!-- LEFT: Roles List -->
+        <div>
+          <div style="margin-bottom:var(--space-4);">
+            <div style="font-size:var(--text-xs);text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);font-weight:600;margin-bottom:var(--space-3);">الأدوار المتاحة</div>
+
+            <div class="role-card selected" onclick="selectRole(this,'مدير النظام')">
+              <div class="role-icon" style="background:rgba(212,175,55,0.15);color:var(--gold-500);">
+                <i class="fas fa-crown"></i>
+              </div>
+              <div style="flex:1;">
+                <div class="role-name">مدير النظام</div>
+                <div class="role-count">3 مستخدمين · صلاحيات كاملة</div>
+              </div>
+              <span class="badge badge-gold">مدير</span>
+            </div>
+
+            <div class="role-card" onclick="selectRole(this,'المشرف')">
+              <div class="role-icon" style="background:rgba(59,130,246,0.1);color:#93c5fd;">
+                <i class="fas fa-user-shield"></i>
+              </div>
+              <div style="flex:1;">
+                <div class="role-name">المشرف</div>
+                <div class="role-count">2 مستخدمين · صلاحيات واسعة</div>
+              </div>
+              <span class="badge badge-info">مشرف</span>
+            </div>
+
+            <div class="role-card" onclick="selectRole(this,'مسوّق')">
+              <div class="role-icon" style="background:rgba(45,186,126,0.1);color:#4ade80;">
+                <i class="fas fa-bullhorn"></i>
+              </div>
+              <div style="flex:1;">
+                <div class="role-name">مسوّق</div>
+                <div class="role-count">4 مستخدمين · الرسائل فقط</div>
+              </div>
+              <span class="badge badge-success">مسوّق</span>
+            </div>
+
+            <div class="role-card" onclick="selectRole(this,'مشاهد')">
+              <div class="role-icon" style="background:var(--bg-secondary);color:var(--text-muted);">
+                <i class="fas fa-eye"></i>
+              </div>
+              <div style="flex:1;">
+                <div class="role-name">مشاهد</div>
+                <div class="role-count">1 مستخدم · قراءة فقط</div>
+              </div>
+              <span class="badge" style="background:var(--bg-card);border:1px solid var(--border-default);color:var(--text-muted);">مشاهد</span>
+            </div>
+
+          </div>
+
+          <!-- Users in Selected Role -->
+          <div class="card" style="margin-top:var(--space-5);">
+            <div style="font-size:var(--text-sm);font-weight:600;margin-bottom:var(--space-4);">
+              <i class="fas fa-users" style="color:var(--gold-600);margin-left:var(--space-2);"></i>
+              مستخدمو الدور: <span id="currentRoleName" style="color:var(--gold-400);">مدير النظام</span>
+            </div>
+            <div id="roleUsers">
+              <div class="user-chip"><div class="chip-avatar">م</div> محمد المنصور</div>
+              <div class="user-chip"><div class="chip-avatar">س</div> سالم البكري</div>
+              <div class="user-chip"><div class="chip-avatar">ل</div> لمى الحارثي</div>
+            </div>
+            <button class="btn btn-outline btn-sm" style="margin-top:var(--space-4);width:100%;">
+              <i class="fas fa-user-plus"></i> إضافة مستخدم لهذا الدور
+            </button>
+          </div>
+        </div>
+
+        <!-- RIGHT: Permissions Matrix -->
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-5);">
+            <div>
+              <h3 style="font-family:var(--font-display);font-size:var(--text-xl);color:var(--text-primary);">
+                <i class="fas fa-crown" style="color:var(--gold-500);font-size:var(--text-base);margin-left:var(--space-2);"></i>
+                صلاحيات: <span id="permRoleName" style="color:var(--gold-400);">مدير النظام</span>
+              </h3>
+              <p style="font-size:var(--text-xs);color:var(--text-muted);margin-top:4px;">انقر على التبديل لتفعيل أو تعطيل الصلاحية</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="savePerms()">
+              <i class="fas fa-save"></i> حفظ الصلاحيات
+            </button>
+          </div>
+
+          <!-- Permissions header legend -->
+          <div style="display:flex;justify-content:flex-end;gap:var(--space-5);margin-bottom:var(--space-3);padding-left:var(--space-5);">
+            <span style="font-size:10px;color:var(--text-muted);text-align:center;">عرض</span>
+            <span style="font-size:10px;color:var(--text-muted);text-align:center;">إضافة</span>
+            <span style="font-size:10px;color:var(--text-muted);text-align:center;">تعديل</span>
+            <span style="font-size:10px;color:var(--text-muted);text-align:center;">حذف</span>
+          </div>
+
+          <!-- Customers Group -->
+          <div class="perm-group">
+            <div class="perm-group-header" onclick="toggleGroup(this)">
+              <div class="perm-group-title">
+                <div class="perm-group-icon"><i class="fas fa-users"></i></div>
+                إدارة العملاء
+              </div>
+              <div style="display:flex;align-items:center;gap:var(--space-3);">
+                <span class="badge badge-success">4/4 مفعّل</span>
+                <i class="fas fa-chevron-down" style="color:var(--text-muted);transition:transform 0.2s;"></i>
+              </div>
+            </div>
+            <div class="perm-group-body">
+              <div class="perm-item">
+                <div><div class="perm-name">عرض العملاء</div><div class="perm-desc">مشاهدة قائمة وبيانات العملاء</div></div>
+                <div class="perm-checkboxes">
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>عرض</span></label>
+                  <label class="perm-check-label">&nbsp;<input type="checkbox" style="visibility:hidden;" /></label>
+                  <label class="perm-check-label">&nbsp;<input type="checkbox" style="visibility:hidden;" /></label>
+                  <label class="perm-check-label">&nbsp;<input type="checkbox" style="visibility:hidden;" /></label>
+                </div>
+              </div>
+              <div class="perm-item">
+                <div><div class="perm-name">إدارة العملاء CRUD</div><div class="perm-desc">إضافة، تعديل، حذف العملاء</div></div>
+                <div class="perm-checkboxes">
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>عرض</span></label>
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>إضافة</span></label>
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>تعديل</span></label>
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>حذف</span></label>
+                </div>
+              </div>
+              <div class="perm-item">
+                <div><div class="perm-name">استيراد / تصدير</div><div class="perm-desc">رفع ملفات CSV واستخراج التقارير</div></div>
+                <div class="perm-checkboxes">
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>عرض</span></label>
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>إضافة</span></label>
+                  <label class="perm-check-label">&nbsp;<input type="checkbox" style="visibility:hidden;" /></label>
+                  <label class="perm-check-label">&nbsp;<input type="checkbox" style="visibility:hidden;" /></label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Messages Group -->
+          <div class="perm-group">
+            <div class="perm-group-header" onclick="toggleGroup(this)">
+              <div class="perm-group-title">
+                <div class="perm-group-icon"><i class="fas fa-comment-dots"></i></div>
+                الرسائل
+              </div>
+              <div style="display:flex;align-items:center;gap:var(--space-3);">
+                <span class="badge badge-success">6/6 مفعّل</span>
+                <i class="fas fa-chevron-down" style="color:var(--text-muted);"></i>
+              </div>
+            </div>
+            <div class="perm-group-body">
+              <div class="perm-item">
+                <div><div class="perm-name">عرض الرسائل والسجل</div><div class="perm-desc">مشاهدة تاريخ وإحصاء الرسائل</div></div>
+                <div class="perm-checkboxes">
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>عرض</span></label>
+                  <label class="perm-check-label">&nbsp;<input type="checkbox" style="visibility:hidden;" /></label>
+                  <label class="perm-check-label">&nbsp;<input type="checkbox" style="visibility:hidden;" /></label>
+                  <label class="perm-check-label">&nbsp;<input type="checkbox" style="visibility:hidden;" /></label>
+                </div>
+              </div>
+              <div class="perm-item">
+                <div><div class="perm-name">إرسال رسائل فردية</div><div class="perm-desc">إرسال رسائل لعميل واحد</div></div>
+                <div class="perm-checkboxes">
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>عرض</span></label>
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>إضافة</span></label>
+                  <label class="perm-check-label">&nbsp;<input type="checkbox" style="visibility:hidden;" /></label>
+                  <label class="perm-check-label">&nbsp;<input type="checkbox" style="visibility:hidden;" /></label>
+                </div>
+              </div>
+              <div class="perm-item">
+                <div><div class="perm-name">إرسال حملات جماعية</div><div class="perm-desc">إرسال لمجموعات وقطاعات كاملة</div></div>
+                <div class="perm-checkboxes">
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>عرض</span></label>
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>إضافة</span></label>
+                  <label class="perm-check-label">&nbsp;<input type="checkbox" style="visibility:hidden;" /></label>
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>حذف</span></label>
+                </div>
+              </div>
+              <div class="perm-item">
+                <div><div class="perm-name">جدولة الرسائل</div><div class="perm-desc">إنشاء وإدارة الرسائل المجدولة</div></div>
+                <div class="perm-checkboxes">
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>عرض</span></label>
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>إضافة</span></label>
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>تعديل</span></label>
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>حذف</span></label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Settings & Admin Group -->
+          <div class="perm-group">
+            <div class="perm-group-header" onclick="toggleGroup(this)">
+              <div class="perm-group-title">
+                <div class="perm-group-icon"><i class="fas fa-gear"></i></div>
+                الإعدادات والنظام
+              </div>
+              <div style="display:flex;align-items:center;gap:var(--space-3);">
+                <span class="badge badge-success">5/5 مفعّل</span>
+                <i class="fas fa-chevron-down" style="color:var(--text-muted);"></i>
+              </div>
+            </div>
+            <div class="perm-group-body">
+              <div class="perm-item">
+                <div><div class="perm-name">إعدادات النظام</div><div class="perm-desc">تعديل الإعدادات العامة للمنصة</div></div>
+                <div class="perm-checkboxes">
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>عرض</span></label>
+                  <label class="perm-check-label">&nbsp;<input type="checkbox" style="visibility:hidden;" /></label>
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>تعديل</span></label>
+                  <label class="perm-check-label">&nbsp;<input type="checkbox" style="visibility:hidden;" /></label>
+                </div>
+              </div>
+              <div class="perm-item">
+                <div><div class="perm-name">إدارة المستخدمين</div><div class="perm-desc">إضافة، تعديل، إزالة المستخدمين</div></div>
+                <div class="perm-checkboxes">
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>عرض</span></label>
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>إضافة</span></label>
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>تعديل</span></label>
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>حذف</span></label>
+                </div>
+              </div>
+              <div class="perm-item">
+                <div><div class="perm-name">إدارة الصلاحيات</div><div class="perm-desc">تعديل أدوار وصلاحيات المستخدمين</div></div>
+                <div class="perm-checkboxes">
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>عرض</span></label>
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>إضافة</span></label>
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>تعديل</span></label>
+                  <label class="perm-check-label"><input type="checkbox" checked /><span>حذف</span></label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD ROLE MODAL -->
+<div class="modal-backdrop" id="addRoleModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <h3 class="modal-title"><i class="fas fa-shield-halved" style="color:var(--gold-500);margin-left:var(--space-2);"></i> إنشاء دور جديد</h3>
+      <button class="navbar-icon-btn" onclick="document.getElementById('addRoleModal').classList.remove('open')"><i class="fas fa-xmark"></i></button>
+    </div>
+    <form onsubmit="return false;" style="display:flex;flex-direction:column;gap:var(--space-4);">
+      <div class="form-group">
+        <label class="form-label">اسم الدور <span class="required">*</span></label>
+        <input type="text" class="form-control" placeholder="مثال: مندوب المبيعات" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">الوصف</label>
+        <input type="text" class="form-control" placeholder="وصف مختصر لمهام هذا الدور" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">لون الدور</label>
+        <div style="display:flex;gap:var(--space-3);" id="roleColorPicker">
+          <div class="role-color-dot selected" onclick="selectColor(this,'#d4af37')" style="background:#d4af37;border-color:var(--gold-500);"></div>
+          <div class="role-color-dot" onclick="selectColor(this,'#3b82f6')" style="background:#3b82f6;"></div>
+          <div class="role-color-dot" onclick="selectColor(this,'#22c55e')" style="background:#22c55e;"></div>
+          <div class="role-color-dot" onclick="selectColor(this,'#ef4444')" style="background:#ef4444;"></div>
+          <div class="role-color-dot" onclick="selectColor(this,'#8b5cf6')" style="background:#8b5cf6;"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">نسخ صلاحيات من دور آخر</label>
+        <select class="form-control form-select">
+          <option value="">ابدأ من الصفر</option>
+          <option>مشاهد</option>
+          <option>مسوّق</option>
+          <option>المشرف</option>
+        </select>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:var(--space-3);padding-top:var(--space-4);border-top:1px solid var(--border-default);">
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('addRoleModal').classList.remove('open')">إلغاء</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> إنشاء الدور</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Save Toast -->
+<div class="toast-container">
+  <div class="toast toast-success" id="permToast" style="display:none;">
+    <i class="fas fa-check-circle" style="color:var(--success);font-size:20px;"></i>
+    <div>
+      <div style="font-weight:600;font-size:var(--text-sm);">تم حفظ الصلاحيات</div>
+      <div style="font-size:var(--text-xs);color:var(--text-muted);">تم تحديث صلاحيات المدير بنجاح</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function selectRole(el, name) {
+    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('currentRoleName').textContent = name;
+    document.getElementById('permRoleName').textContent    = name;
+  }
+
+  function toggleGroup(header) {
+    const body  = header.nextElementSibling;
+    const icon  = header.querySelector('.fa-chevron-down');
+    const open  = body.style.display !== 'none';
+    body.style.display  = open ? 'none' : 'block';
+    icon.style.transform = open ? 'rotate(-90deg)' : 'rotate(0deg)';
+  }
+
+  function savePerms() {
+    const t = document.getElementById('permToast');
+    t.style.display = 'flex';
+    setTimeout(() => t.style.display = 'none', 3000);
+  }
+
+  function selectColor(el, color) {
+    document.querySelectorAll('.role-color-dot').forEach(dot => {
+      dot.classList.remove('selected');
+      dot.style.borderColor = 'transparent';
+      dot.style.boxShadow = 'none';
+    });
+    el.classList.add('selected');
+    el.style.borderColor = color;
+    el.style.boxShadow = `0 0 8px ${color}66`;
+  }
+</script>
+</body>
+</html>

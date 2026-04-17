@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>الرسائل — MMM</title>
+  <link rel="stylesheet" href="assets/css/design-system.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .msg-layout { display: grid; grid-template-columns: 1fr 400px; gap: var(--space-6); }
+
+    /* Message Compose */
+    .recipient-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      padding: var(--space-2);
+      background: var(--bg-input);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-sm);
+      min-height: 48px;
+      align-items: flex-start;
+      transition: border-color var(--transition-base);
+    }
+
+    .recipient-tags:focus-within { border-color: var(--gold-500); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+    .recipient-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-muted);
+      border: 1px solid var(--accent-border);
+      border-radius: var(--radius-full);
+      padding: 3px 10px;
+      font-size: var(--text-xs);
+      color: var(--gold-400);
+    }
+
+    .recipient-tag button { color: var(--gold-600); cursor: pointer; transition: color var(--transition-fast); }
+    .recipient-tag button:hover { color: var(--danger); }
+
+    .recipient-tags input {
+      flex: 1;
+      min-width: 120px;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-size: var(--text-sm);
+      padding: 4px var(--space-2);
+    }
+
+    .msg-textarea {
+      width: 100%;
+      min-height: 180px;
+      padding: var(--space-4);
+      background: var(--bg-input);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      line-height: 1.7;
+      resize: vertical;
+      transition: all var(--transition-base);
+      outline: none;
+    }
+
+    .msg-textarea:focus { border-color: var(--gold-500); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+    .char-count {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: var(--space-2);
+    }
+
+    .variables-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-3);
+    }
+
+    .variable-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-family: monospace;
+    }
+
+    .variable-chip:hover { border-color: var(--accent-border); color: var(--gold-400); }
+
+    /* Schedule */
+    .schedule-toggle { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4); background: var(--bg-card); border: 1px solid var(--border-default); border-radius: var(--radius-md); cursor: pointer; }
+    .schedule-panel { display: none; margin-top: var(--space-4); }
+    .schedule-panel.open { display: block; }
+
+    /* Sent History */
+    .history-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background var(--transition-fast);
+    }
+
+    .history-item:hover { background: var(--accent-muted); }
+
+    .msg-status-icon {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .template-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .template-card:hover { border-color: var(--accent-border); background: var(--accent-muted); }
+
+    @media (max-width: 1100px) { .msg-layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="dashboard-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">M</div><span class="sidebar-logo-text">MMM</span></div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">الرئيسي</span>
+      <a href="dashboard.html" class="nav-item"><i class="nav-icon fas fa-chart-pie"></i><span>لوحة التحكم</span></a>
+      <a href="customers.html" class="nav-item"><i class="nav-icon fas fa-users"></i><span>إدارة العملاء</span></a>
+      <a href="messages.html" class="nav-item active"><i class="nav-icon fas fa-comment-dots"></i><span>الرسائل</span><span class="badge badge-gold" style="margin-right:auto;">3</span></a>
+      <span class="nav-section-label">الإعدادات</span>
+      <a href="fields.html" class="nav-item"><i class="nav-icon fas fa-sliders"></i><span>الحقول الديناميكية</span></a>
+      <a href="modules.html" class="nav-item"><i class="nav-icon fas fa-cubes"></i><span>الميزات</span></a>
+      <a href="permissions.html" class="nav-item"><i class="nav-icon fas fa-shield-halved"></i><span>الصلاحيات</span></a>
+      <a href="settings.html" class="nav-item"><i class="nav-icon fas fa-gear"></i><span>الإعدادات</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card"><div class="user-avatar">م</div><div style="flex:1;min-width:0;"><div style="font-size:var(--text-sm);font-weight:600;">محمد المنصور</div><div style="font-size:var(--text-xs);color:var(--text-muted);">admin@mmm.com</div></div></div>
+    </div>
+  </aside>
+
+  <div class="dashboard-content">
+    <nav class="dashboard-navbar">
+      <div class="tabs" style="padding:2px;">
+        <button class="tab-btn active" onclick="switchTab('compose',this)"><i class="fas fa-pen"></i> إنشاء رسالة</button>
+        <button class="tab-btn" onclick="switchTab('scheduled',this)"><i class="fas fa-clock"></i> المجدولة <span class="badge badge-gold" style="margin-right:var(--space-1);">3</span></button>
+        <button class="tab-btn" onclick="switchTab('history',this)"><i class="fas fa-history"></i> السجل</button>
+        <button class="tab-btn" onclick="switchTab('templates',this)"><i class="fas fa-file-alt"></i> القوالب</button>
+      </div>
+      <div class="navbar-actions">
+        <button class="navbar-icon-btn"><i class="fas fa-bell"></i><span class="notification-dot"></span></button>
+        <div class="user-avatar" style="width:34px;height:34px;font-size:var(--text-xs);">م</div>
+      </div>
+    </nav>
+
+    <div class="page-content">
+
+      <!-- ══════════ TAB: COMPOSE ══════════════════════════ -->
+      <div id="tab-compose" class="tab-content">
+        <div class="msg-layout">
+
+          <!-- COMPOSE FORM -->
+          <div style="display:flex;flex-direction:column;gap:var(--space-5);">
+
+            <!-- Type Switch -->
+            <div style="display:flex;gap:var(--space-3);">
+              <button class="btn btn-primary btn-sm" id="btnBulk" onclick="setMsgType('bulk',this)">
+                <i class="fas fa-users"></i> جماعية
+              </button>
+              <button class="btn btn-outline btn-sm" id="btnSingle" onclick="setMsgType('single',this)">
+                <i class="fas fa-user"></i> فردية
+              </button>
+            </div>
+
+            <!-- Recipients (Bulk) -->
+            <div id="bulkSection">
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-users" style="color:var(--gold-600);"></i> المستلمون <span class="required">*</span></label>
+                <div style="display:flex;gap:var(--space-3);">
+                  <select class="form-control form-select" style="flex:1;background:var(--bg-card);">
+                    <option>كل العملاء (2,847)</option>
+                    <option>المجموعة A (420)</option>
+                    <option>المجموعة B (1,100)</option>
+                    <option>المجموعة C (1,327)</option>
+                    <option>العملاء النشطون (1,932)</option>
+                    <option>تصفية مخصصة...</option>
+                  </select>
+                  <div style="background:var(--accent-muted);border:1px solid var(--accent-border);border-radius:var(--radius-sm);padding:0 var(--space-4);display:flex;align-items:center;font-size:var(--text-sm);color:var(--gold-400);white-space:nowrap;font-weight:600;">
+                    <i class="fas fa-users" style="margin-left:var(--space-2);"></i>
+                    2,847 عميل
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recipients (Single) -->
+            <div id="singleSection" style="display:none;">
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-user" style="color:var(--gold-600);"></i> المستلم</label>
+                <div class="recipient-tags" id="recipientTags">
+                  <span class="recipient-tag">سالم العمري <button type="button" onclick="this.parentElement.remove()"><i class="fas fa-xmark"></i></button></span>
+                  <input type="text" placeholder="ابحث عن عميل أو أدخل رقمًا..." />
+                </div>
+              </div>
+            </div>
+
+            <!-- Channel -->
+            <div class="form-group">
+              <label class="form-label"><i class="fas fa-satellite-dish" style="color:var(--gold-600);"></i> قناة الإرسال</label>
+              <div style="display:flex;gap:var(--space-3);">
+                <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-4);background:var(--accent-muted);border:2px solid var(--gold-500);border-radius:var(--radius-sm);cursor:pointer;">
+                  <input type="radio" name="channel" checked style="accent-color:var(--gold-500);" />
+                  <i class="fas fa-comment-sms" style="color:var(--gold-500);"></i>
+                  <span style="font-size:var(--text-sm);font-weight:600;">SMS</span>
+                </label>
+                <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-4);background:var(--bg-card);border:2px solid var(--border-default);border-radius:var(--radius-sm);cursor:pointer;">
+                  <input type="radio" name="channel" style="accent-color:var(--gold-500);" />
+                  <i class="fab fa-whatsapp" style="color:#25d366;"></i>
+                  <span style="font-size:var(--text-sm);">واتساب</span>
+                </label>
+                <label style="flex:1;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-4);background:var(--bg-card);border:2px solid var(--border-default);border-radius:var(--radius-sm);cursor:pointer;">
+                  <input type="radio" name="channel" style="accent-color:var(--gold-500);" />
+                  <i class="fas fa-envelope" style="color:var(--info);"></i>
+                  <span style="font-size:var(--text-sm);">بريد</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Message Body -->
+            <div class="form-group">
+              <label class="form-label"><i class="fas fa-align-right" style="color:var(--gold-600);"></i> نص الرسالة <span class="required">*</span></label>
+              <textarea class="msg-textarea" id="msgBody" placeholder="أدخل نص الرسالة هنا..." oninput="updateCharCount()"></textarea>
+              <div class="char-count">
+                <span>متغيرات ديناميكية:</span>
+                <span id="charDisplay">0 / 160 حرف · 1 SMS</span>
+              </div>
+              <div class="variables-row">
+                <span class="variable-chip" onclick="insertVar('{{الاسم}}')">{{الاسم}}</span>
+                <span class="variable-chip" onclick="insertVar('{{الهاتف}}')">{{الهاتف}}</span>
+                <span class="variable-chip" onclick="insertVar('{{المجموعة}}')">{{المجموعة}}</span>
+                <span class="variable-chip" onclick="insertVar('{{رقم العضوية}}')">{{رقم العضوية}}</span>
+                <span class="variable-chip" onclick="insertVar('{{التاريخ}}')">{{التاريخ}}</span>
+              </div>
+            </div>
+
+            <!-- Schedule Toggle -->
+            <div>
+              <div class="schedule-toggle" onclick="toggleSchedule()">
+                <div style="display:flex;align-items:center;gap:var(--space-3);">
+                  <i class="fas fa-clock" style="color:var(--gold-600);"></i>
+                  <div>
+                    <div style="font-size:var(--text-sm);font-weight:600;">جدولة الإرسال</div>
+                    <div style="font-size:var(--text-xs);color:var(--text-muted);">أرسل الرسالة في وقت محدد</div>
+                  </div>
+                </div>
+                <label class="toggle" onclick="event.stopPropagation()">
+                  <input type="checkbox" id="scheduleToggle" onchange="toggleSchedule()" />
+                  <div class="toggle-track"></div>
+                </label>
+              </div>
+
+              <div class="schedule-panel" id="schedulePanel">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);padding:var(--space-4);background:var(--bg-card);border:1px solid var(--border-default);border-radius:var(--radius-md);">
+                  <div class="form-group">
+                    <label class="form-label">التاريخ</label>
+                    <input type="date" class="form-control" style="background:var(--bg-input);" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">الوقت</label>
+                    <input type="time" class="form-control" style="background:var(--bg-input);" />
+                  </div>
+                  <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">المنطقة الزمنية</label>
+                    <select class="form-control form-select" style="background:var(--bg-input);">
+                      <option>توقيت الرياض (GMT+3)</option>
+                      <option>توقيت دبي (GMT+4)</option>
+                      <option>توقيت القاهرة (GMT+2)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="display:flex;gap:var(--space-3);">
+              <button class="btn btn-outline" style="flex:1;"><i class="fas fa-eye"></i> معاينة</button>
+              <button class="btn btn-outline" style=""><i class="fas fa-save"></i> حفظ كمسودة</button>
+              <button class="btn btn-primary" style="flex:2;" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i> إرسال الآن
+              </button>
+            </div>
+
+          </div>
+
+          <!-- PREVIEW CARD -->
+          <div>
+            <div class="card" style="position:sticky;top:calc(var(--navbar-height) + var(--space-6));">
+              <div style="margin-bottom:var(--space-5);">
+                <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);margin-bottom:var(--space-1);">معاينة الرسالة</div>
+                <div style="font-size:var(--text-xs);color:var(--text-muted);">كما ستظهر للمستلم</div>
+              </div>
+
+              <!-- Phone mockup -->
+              <div style="background:var(--bg-primary);border-radius:24px;padding:var(--space-5);border:2px solid var(--border-default);position:relative;max-width:280px;margin:0 auto;">
+                <div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);width:60px;height:4px;background:var(--bg-card-hover);border-radius:2px;"></div>
+                <div style="margin-top:var(--space-6);background:var(--bg-card);border-radius:var(--radius-md);padding:var(--space-4);min-height:80px;">
+                  <div style="font-size:11px;color:var(--text-muted);margin-bottom:var(--space-2);">MMM Platform</div>
+                  <div style="font-size:var(--text-sm);color:var(--text-primary);line-height:1.6;" id="msgPreview">
+                    مرحبًا <span style="color:var(--gold-400);">سالم العمري</span>، نشكر تعاملك معنا...
+                  </div>
+                  <div style="font-size:10px;color:var(--text-muted);margin-top:var(--space-3);text-align:left;">12:34 ✓✓</div>
+                </div>
+              </div>
+
+              <!-- Stats -->
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-top:var(--space-5);">
+                <div style="text-align:center;padding:var(--space-3);background:var(--bg-secondary);border-radius:var(--radius-sm);">
+                  <div style="font-family:var(--font-display);font-size:var(--text-xl);font-weight:700;color:var(--gold-400);">2,847</div>
+                  <div style="font-size:10px;color:var(--text-muted);">مستلم</div>
+                </div>
+                <div style="text-align:center;padding:var(--space-3);background:var(--bg-secondary);border-radius:var(--radius-sm);">
+                  <div style="font-family:var(--font-display);font-size:var(--text-xl);font-weight:700;color:var(--gold-400);">1</div>
+                  <div style="font-size:10px;color:var(--text-muted);">SMS / مستلم</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══════════ TAB: SCHEDULED ════════════════════════ -->
+      <div id="tab-scheduled" class="tab-content" style="display:none;">
+        <div class="page-header">
+          <div><h1 class="page-title">الرسائل المجدولة</h1><p class="page-subtitle">3 رسائل في قائمة الانتظار</p></div>
+        </div>
+        <div class="table-wrapper">
+          <table class="table">
+            <thead><tr>
+              <th>الرسالة</th><th>المستلمون</th><th>القناة</th><th>موعد الإرسال</th><th>الحالة</th><th>الإجراءات</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td><div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);margin-bottom:2px;">رسالة ترحيبية للعملاء الجدد</div><div style="font-size:var(--text-xs);color:var(--text-muted);">مرحبًا {{الاسم}}، نشكرك على...</div></td>
+                <td><span class="badge badge-gold">كل العملاء</span></td>
+                <td><i class="fas fa-comment-sms" style="color:var(--gold-500);"></i> SMS</td>
+                <td style="font-size:var(--text-sm);">2025-04-20 09:00</td>
+                <td><span class="badge badge-warning">مجدولة</span></td>
+                <td><div class="table-actions"><div class="action-btn"><i class="fas fa-pen"></i></div><div class="action-btn delete"><i class="fas fa-ban"></i></div></div></td>
+              </tr>
+              <tr>
+                <td><div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);margin-bottom:2px;">عرض خاص — رمضان</div><div style="font-size:var(--text-xs);color:var(--text-muted);">احتفالًا بشهر رمضان المبارك...</div></td>
+                <td><span class="badge badge-gold">المجموعة A</span></td>
+                <td><i class="fab fa-whatsapp" style="color:#25d366;"></i> واتساب</td>
+                <td style="font-size:var(--text-sm);">2025-04-22 08:30</td>
+                <td><span class="badge badge-warning">مجدولة</span></td>
+                <td><div class="table-actions"><div class="action-btn"><i class="fas fa-pen"></i></div><div class="action-btn delete"><i class="fas fa-ban"></i></div></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══════════ TAB: HISTORY ══════════════════════════ -->
+      <div id="tab-history" class="tab-content" style="display:none;">
+        <div class="page-header">
+          <div><h1 class="page-title">سجل الرسائل</h1><p class="page-subtitle">إجمالي 18,492 رسالة مرسلة</p></div>
+          <button class="btn btn-outline btn-sm"><i class="fas fa-download"></i> تصدير السجل</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div class="history-item">
+            <div class="msg-status-icon" style="background:rgba(45,186,126,0.1);color:#4ade80;"><i class="fas fa-check-double"></i></div>
+            <div style="flex:1;">
+              <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">حملة الترحيب بالعملاء الجدد</div>
+              <div style="font-size:var(--text-xs);color:var(--text-muted);margin-top:2px;">320 مستلم · معدل الفتح 78% · SMS</div>
+            </div>
+            <div style="text-align:left;">
+              <div style="font-size:var(--text-xs);color:var(--text-muted);">منذ ساعة</div>
+              <span class="badge badge-success" style="margin-top:4px;">مكتملة</span>
+            </div>
+          </div>
+          <div class="history-item">
+            <div class="msg-status-icon" style="background:rgba(45,186,126,0.1);color:#4ade80;"><i class="fas fa-check-double"></i></div>
+            <div style="flex:1;">
+              <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">تذكير بموعد التجديد</div>
+              <div style="font-size:var(--text-xs);color:var(--text-muted);margin-top:2px;">85 مستلم · واتساب</div>
+            </div>
+            <div style="text-align:left;">
+              <div style="font-size:var(--text-xs);color:var(--text-muted);">أمس 14:30</div>
+              <span class="badge badge-success" style="margin-top:4px;">مكتملة</span>
+            </div>
+          </div>
+          <div class="history-item">
+            <div class="msg-status-icon" style="background:rgba(239,68,68,0.1);color:#fca5a5;"><i class="fas fa-exclamation-circle"></i></div>
+            <div style="flex:1;">
+              <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);">حملة الجمعة البيضاء</div>
+              <div style="font-size:var(--text-xs);color:var(--text-muted);margin-top:2px;">1,200 مستلم · 43 رسالة فاشلة · SMS</div>
+            </div>
+            <div style="text-align:left;">
+              <div style="font-size:var(--text-xs);color:var(--text-muted);">2025-04-10</div>
+              <span class="badge badge-warning" style="margin-top:4px;">جزئية</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ TAB: TEMPLATES ════════════════════════ -->
+      <div id="tab-templates" class="tab-content" style="display:none;">
+        <div class="page-header">
+          <div><h1 class="page-title">قوالب الرسائل</h1><p class="page-subtitle">أنشئ قوالب جاهزة لإعادة الاستخدام</p></div>
+          <button class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> قالب جديد</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:var(--space-5);">
+          <div class="template-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3);">
+              <span style="font-weight:600;color:var(--text-primary);">رسالة الترحيب</span>
+              <span class="badge badge-success">SMS</span>
+            </div>
+            <p style="font-size:var(--text-sm);color:var(--text-secondary);line-height:1.7;margin-bottom:var(--space-4);">مرحبًا {{الاسم}}، يسعدنا انضمامك لعائلة MMM. رقم عضويتك: {{رقم العضوية}}</p>
+            <div style="display:flex;gap:var(--space-2);">
+              <button class="btn btn-outline btn-sm" style="flex:1;font-size:11px;"><i class="fas fa-paper-plane"></i> استخدام</button>
+              <button class="btn btn-ghost btn-icon"><i class="fas fa-pen" style="font-size:12px;"></i></button>
+              <button class="btn btn-ghost btn-icon" style="color:var(--danger);"><i class="fas fa-trash" style="font-size:12px;"></i></button>
+            </div>
+          </div>
+          <div class="template-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3);">
+              <span style="font-weight:600;color:var(--text-primary);">تذكير بالموعد</span>
+              <span class="badge badge-info">واتساب</span>
+            </div>
+            <p style="font-size:var(--text-sm);color:var(--text-secondary);line-height:1.7;margin-bottom:var(--space-4);">{{الاسم}}، تذكير بموعدك القادم يوم {{التاريخ}}. نتطلع لخدمتك!</p>
+            <div style="display:flex;gap:var(--space-2);">
+              <button class="btn btn-outline btn-sm" style="flex:1;font-size:11px;"><i class="fas fa-paper-plane"></i> استخدام</button>
+              <button class="btn btn-ghost btn-icon"><i class="fas fa-pen" style="font-size:12px;"></i></button>
+              <button class="btn btn-ghost btn-icon" style="color:var(--danger);"><i class="fas fa-trash" style="font-size:12px;"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS TOAST -->
+<div class="toast-container">
+  <div class="toast toast-gold" id="sendToast" style="display:none;">
+    <i class="fas fa-check-circle" style="color:var(--gold-500);font-size:20px;"></i>
+    <div>
+      <div style="font-weight:600;font-size:var(--text-sm);color:var(--text-primary);">تم الإرسال بنجاح</div>
+      <div style="font-size:var(--text-xs);color:var(--text-muted);">تم إرسال الرسالة إلى 2,847 عميل</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+    document.getElementById('tab-' + name).style.display = 'block';
+    btn.closest('.tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function setMsgType(type, btn) {
+    document.getElementById('bulkSection').style.display  = type === 'bulk' ? 'block' : 'none';
+    document.getElementById('singleSection').style.display = type === 'single' ? 'block' : 'none';
+    document.getElementById('btnBulk').className   = type === 'bulk'   ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm';
+    document.getElementById('btnSingle').className = type === 'single' ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm';
+  }
+
+  function updateCharCount() {
+    const body = document.getElementById('msgBody');
+    const len  = body.value.length;
+    const sms  = Math.ceil(len / 160) || 1;
+    document.getElementById('charDisplay').textContent = `${len} / 160 حرف · ${sms} SMS`;
+    // Update preview
+    document.getElementById('msgPreview').textContent = body.value || 'نص الرسالة سيظهر هنا...';
+  }
+
+  function insertVar(v) {
+    const ta = document.getElementById('msgBody');
+    const s  = ta.selectionStart;
+    ta.value = ta.value.slice(0, s) + v + ta.value.slice(ta.selectionEnd);
+    ta.focus();
+    ta.setSelectionRange(s + v.length, s + v.length);
+    updateCharCount();
+  }
+
+  function toggleSchedule() {
+    const panel  = document.getElementById('schedulePanel');
+    const toggle = document.getElementById('scheduleToggle');
+    panel.classList.toggle('open', toggle.checked);
+  }
+
+  function sendMessage() {
+    const toast = document.getElementById('sendToast');
+    toast.style.display = 'flex';
+    setTimeout(() => { toast.style.display = 'none'; }, 4000);
+  }
+
+  // Tab buttons
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      this.closest('.tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

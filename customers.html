@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>إدارة العملاء — MMM</title>
+  <link rel="stylesheet" href="assets/css/design-system.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-6);
+    }
+
+    .filter-bar .input-group { flex: 1; min-width: 240px; }
+
+    .client-avatar {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--gold-700), var(--gold-400));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: var(--text-sm);
+      color: var(--black-900);
+      flex-shrink: 0;
+    }
+
+    .client-info { display: flex; align-items: center; gap: var(--space-3); }
+    .client-name { font-size: var(--text-sm); font-weight: 600; color: var(--text-primary); }
+    .client-email { font-size: var(--text-xs); color: var(--text-muted); }
+
+    .table-actions { display: flex; align-items: center; gap: var(--space-2); }
+
+    .action-btn {
+      width: 30px; height: 30px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      transition: all var(--transition-fast);
+      cursor: pointer;
+      border: 1px solid var(--border-default);
+      background: var(--bg-card);
+      color: var(--text-muted);
+    }
+
+    .action-btn:hover { border-color: var(--accent-border); color: var(--gold-400); background: var(--accent-muted); }
+    .action-btn.delete:hover { border-color: rgba(239,68,68,0.4); color: #fca5a5; background: rgba(239,68,68,0.1); }
+
+    /* Add Client Modal */
+    .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+
+    /* Import bar */
+    .import-zone {
+      border: 2px dashed var(--border-default);
+      border-radius: var(--radius-lg);
+      padding: var(--space-10);
+      text-align: center;
+      transition: all var(--transition-base);
+      cursor: pointer;
+    }
+
+    .import-zone:hover {
+      border-color: var(--accent-border);
+      background: var(--accent-muted);
+    }
+
+    .import-icon {
+      font-size: 40px;
+      color: var(--gold-600);
+      margin-bottom: var(--space-4);
+    }
+
+    /* Bulk actions bar */
+    .bulk-bar {
+      display: none;
+      align-items: center;
+      gap: var(--space-4);
+      background: var(--accent-muted);
+      border: 1px solid var(--accent-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-5);
+      margin-bottom: var(--space-4);
+    }
+
+    .bulk-bar.visible { display: flex; }
+  </style>
+</head>
+<body>
+<div class="dashboard-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">M</div>
+      <span class="sidebar-logo-text">MMM</span>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">الرئيسي</span>
+      <a href="dashboard.html" class="nav-item"><i class="nav-icon fas fa-chart-pie"></i><span>لوحة التحكم</span></a>
+      <a href="customers.html" class="nav-item active"><i class="nav-icon fas fa-users"></i><span>إدارة العملاء</span></a>
+      <a href="messages.html" class="nav-item"><i class="nav-icon fas fa-comment-dots"></i><span>الرسائل</span><span class="badge badge-gold" style="margin-right:auto;">3</span></a>
+      <span class="nav-section-label">الإعدادات</span>
+      <a href="fields.html" class="nav-item"><i class="nav-icon fas fa-sliders"></i><span>الحقول الديناميكية</span></a>
+      <a href="modules.html" class="nav-item"><i class="nav-icon fas fa-cubes"></i><span>الميزات</span></a>
+      <a href="permissions.html" class="nav-item"><i class="nav-icon fas fa-shield-halved"></i><span>الصلاحيات</span></a>
+      <a href="settings.html" class="nav-item"><i class="nav-icon fas fa-gear"></i><span>الإعدادات</span></a>
+      <span class="nav-section-label">النظام</span>
+      <a href="#" class="nav-item"><i class="nav-icon fas fa-bell"></i><span>الإشعارات</span><span class="badge badge-gold" style="margin-right:auto;">7</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar">م</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:var(--text-sm);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">محمد المنصور</div>
+          <div style="font-size:var(--text-xs);color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">admin@mmm.com</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <div class="dashboard-content">
+    <nav class="dashboard-navbar">
+      <div class="navbar-search" style="max-width:360px;">
+        <div class="input-group">
+          <input type="text" class="form-control" placeholder="بحث سريع..." style="background:var(--bg-card);" />
+          <span class="input-icon"><i class="fas fa-search"></i></span>
+        </div>
+      </div>
+      <div class="navbar-actions">
+        <button class="navbar-icon-btn"><i class="fas fa-bell"></i><span class="notification-dot"></span></button>
+        <div class="user-card" style="border:none;background:none;padding:var(--space-2);">
+          <div class="user-avatar" style="width:34px;height:34px;font-size:var(--text-xs);">م</div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="page-content">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">إدارة العملاء</h1>
+          <p class="page-subtitle">إجمالي <strong style="color:var(--gold-400);">2,847</strong> عميل · آخر تحديث: منذ 5 دقائق</p>
+        </div>
+        <div style="display:flex;gap:var(--space-3);">
+          <button class="btn btn-outline btn-sm" onclick="openImport()"><i class="fas fa-file-import"></i> استيراد CSV</button>
+          <button class="btn btn-outline btn-sm"><i class="fas fa-file-export"></i> تصدير</button>
+          <button class="btn btn-primary btn-sm" onclick="openAddModal()"><i class="fas fa-plus"></i> إضافة عميل</button>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <div class="input-group">
+          <input type="text" class="form-control" placeholder="ابحث عن عميل بالاسم أو البريد أو الهاتف..." style="background:var(--bg-card);" oninput="filterTable(this.value)" />
+          <span class="input-icon"><i class="fas fa-search"></i></span>
+        </div>
+
+        <select class="form-control form-select" style="width:160px;background:var(--bg-card);">
+          <option value="">كل الحالات</option>
+          <option>نشط</option>
+          <option>غير نشط</option>
+          <option>جديد</option>
+          <option>VIP</option>
+        </select>
+
+        <select class="form-control form-select" style="width:160px;background:var(--bg-card);">
+          <option value="">كل المجموعات</option>
+          <option>A</option><option>B</option><option>C</option>
+        </select>
+
+        <div class="tabs" style="padding:2px;">
+          <button class="tab-btn active" style="padding:7px 14px;font-size:var(--text-xs);" onclick="switchView('table',this)"><i class="fas fa-table"></i></button>
+          <button class="tab-btn"        style="padding:7px 14px;font-size:var(--text-xs);" onclick="switchView('cards',this)"><i class="fas fa-grip"></i></button>
+        </div>
+      </div>
+
+      <!-- Bulk Action Bar -->
+      <div class="bulk-bar" id="bulkBar">
+        <span style="font-size:var(--text-sm);color:var(--gold-400);font-weight:600;" id="selectedCount">0 عميل محدد</span>
+        <div style="width:1px;height:20px;background:var(--border-default);"></div>
+        <button class="btn btn-outline btn-sm"><i class="fas fa-paper-plane"></i> إرسال رسالة</button>
+        <button class="btn btn-outline btn-sm"><i class="fas fa-tags"></i> تعيين مجموعة</button>
+        <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> حذف المحددين</button>
+      </div>
+
+      <!-- Table View -->
+      <div id="tableView">
+        <div class="table-wrapper">
+          <table class="table" id="clientsTable">
+            <thead>
+              <tr>
+                <th style="width:40px;">
+                  <input type="checkbox" id="selectAll" style="accent-color:var(--gold-500);" onchange="toggleSelectAll(this)" />
+                </th>
+                <th>العميل</th>
+                <th>رقم الهاتف</th>
+                <th>المجموعة</th>
+                <th>تاريخ الانضمام</th>
+                <th>آخر تواصل</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Rows injected by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:var(--space-5);">
+          <span style="font-size:var(--text-sm);color:var(--text-muted);">عرض 1–20 من 2,847 عميل</span>
+          <div class="pagination">
+            <button class="page-btn"><i class="fas fa-angles-right"></i></button>
+            <button class="page-btn"><i class="fas fa-angle-right"></i></button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <span style="color:var(--text-muted);padding:0 var(--space-2);">...</span>
+            <button class="page-btn">143</button>
+            <button class="page-btn"><i class="fas fa-angle-left"></i></button>
+            <button class="page-btn"><i class="fas fa-angles-left"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cards View (hidden) -->
+      <div id="cardsView" style="display:none;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:var(--space-5);" id="cardsContainer"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADD CLIENT MODAL ══════════════════════════════════════ -->
+<div class="modal-backdrop" id="addModal">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-header">
+      <h3 class="modal-title"><i class="fas fa-user-plus" style="color:var(--gold-500);margin-left:var(--space-2);"></i> إضافة عميل جديد</h3>
+      <button class="navbar-icon-btn" onclick="closeAddModal()"><i class="fas fa-xmark"></i></button>
+    </div>
+
+    <form onsubmit="return false;" style="display:flex;flex-direction:column;gap:var(--space-4);">
+      <div class="modal-grid">
+        <div class="form-group">
+          <label class="form-label">الاسم الأول <span class="required">*</span></label>
+          <input type="text" class="form-control" placeholder="محمد" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">الاسم الأخير</label>
+          <input type="text" class="form-control" placeholder="أحمد" />
+        </div>
+      </div>
+
+      <div class="modal-grid">
+        <div class="form-group">
+          <label class="form-label">البريد الإلكتروني <span class="required">*</span></label>
+          <div class="input-group">
+            <input type="email" class="form-control" placeholder="example@email.com" />
+            <span class="input-icon"><i class="fas fa-envelope"></i></span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">رقم الهاتف <span class="required">*</span></label>
+          <div class="input-group">
+            <input type="tel" class="form-control" placeholder="+966 5X XXX XXXX" />
+            <span class="input-icon"><i class="fas fa-phone"></i></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-grid">
+        <div class="form-group">
+          <label class="form-label">المجموعة</label>
+          <select class="form-control form-select">
+            <option>اختر مجموعة</option>
+            <option>A — عملاء مميزون</option>
+            <option>B — عملاء عاديون</option>
+            <option>C — عملاء جدد</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">الحالة</label>
+          <select class="form-control form-select">
+            <option>نشط</option>
+            <option>غير نشط</option>
+            <option>VIP</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">ملاحظات</label>
+        <textarea class="form-control" rows="3" placeholder="ملاحظات إضافية عن العميل..." style="resize:vertical;"></textarea>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:var(--space-3);padding-top:var(--space-4);border-top:1px solid var(--border-default);">
+        <button type="button" class="btn btn-ghost" onclick="closeAddModal()">إلغاء</button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-check"></i> حفظ العميل
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="modal-backdrop" id="importModal">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <h3 class="modal-title"><i class="fas fa-file-import" style="color:var(--gold-500);margin-left:var(--space-2);"></i> استيراد عملاء</h3>
+      <button class="navbar-icon-btn" onclick="closeImport()"><i class="fas fa-xmark"></i></button>
+    </div>
+
+    <div class="import-zone" onclick="document.getElementById('csvInput').click()">
+      <div class="import-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+      <div style="font-size:var(--text-base);font-weight:600;color:var(--text-primary);margin-bottom:var(--space-2);">اسحب ملف CSV هنا أو انقر للتصفح</div>
+      <div style="font-size:var(--text-xs);color:var(--text-muted);">الحد الأقصى: 10,000 صف · الصيغة المدعومة: CSV, XLSX</div>
+      <input type="file" id="csvInput" accept=".csv,.xlsx" style="display:none;" />
+    </div>
+
+    <div style="margin-top:var(--space-5);padding:var(--space-4);background:var(--bg-card);border-radius:var(--radius-md);border:1px solid var(--border-default);">
+      <div style="font-size:var(--text-xs);color:var(--text-muted);margin-bottom:var(--space-3);">تنسيق الأعمدة المطلوبة:</div>
+      <code style="font-size:11px;color:var(--gold-400);">الاسم, البريد_الإلكتروني, الهاتف, المجموعة, الحالة</code>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:var(--space-5);">
+      <a href="#" style="font-size:var(--text-sm);color:var(--gold-600);"><i class="fas fa-download"></i> تحميل القالب</a>
+      <div style="display:flex;gap:var(--space-3);">
+        <button class="btn btn-ghost" onclick="closeImport()">إلغاء</button>
+        <button class="btn btn-primary"><i class="fas fa-upload"></i> استيراد</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Data
+  const clients = [
+    { id:1, name:'سالم العمري',    email:'salem@ex.com',   phone:'+966501234567', group:'A', joined:'2024-01-15', last:'منذ يومين',    status:'VIP'  },
+    { id:2, name:'منيرة الجهني',   email:'m.juhani@ex.com',phone:'+966509876543', group:'A', joined:'2024-02-08', last:'اليوم',        status:'نشط'  },
+    { id:3, name:'فهد القرني',     email:'fahad@ex.com',   phone:'+966555000111', group:'B', joined:'2024-03-12', last:'منذ 3 أيام',   status:'نشط'  },
+    { id:4, name:'نورة السهلي',    email:'noura@ex.com',   phone:'+966512345678', group:'B', joined:'2024-04-01', last:'منذ أسبوع',    status:'نشط'  },
+    { id:5, name:'عبدالله المطيري',email:'a.m@ex.com',     phone:'+966523456789', group:'C', joined:'2025-01-20', last:'اليوم',        status:'جديد' },
+    { id:6, name:'ريم الحربي',     email:'reem@ex.com',    phone:'+966534567890', group:'A', joined:'2023-11-05', last:'منذ شهر',      status:'غير نشط'},
+    { id:7, name:'خالد البلوي',    email:'k.b@ex.com',     phone:'+966545678901', group:'B', joined:'2024-07-18', last:'منذ 5 أيام',   status:'نشط'  },
+    { id:8, name:'سارة الأحمد',    email:'sara@ex.com',    phone:'+966556789012', group:'C', joined:'2025-04-17', last:'الآن',         status:'جديد' },
+  ];
+
+  const statusBadge = { 'VIP':'badge-gold', 'نشط':'badge-success', 'جديد':'badge-warning', 'غير نشط':'badge-danger' };
+  const initials = name => name.split(' ').map(w=>w[0]).join('').slice(0,2);
+  const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (ch) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[ch]));
+
+  function renderTable(data) {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = data.map(c => `
+      <tr>
+        <td><input type="checkbox" class="row-check" style="accent-color:var(--gold-500);" onchange="updateBulk()" /></td>
+        <td>
+          <div class="client-info">
+            <div class="client-avatar">${escapeHtml(initials(c.name))}</div>
+            <div>
+              <div class="client-name">${escapeHtml(c.name)}</div>
+              <div class="client-email">${escapeHtml(c.email)}</div>
+            </div>
+          </div>
+        </td>
+        <td style="color:var(--text-secondary);font-size:var(--text-sm);">${escapeHtml(c.phone)}</td>
+        <td><span class="badge badge-gold">${escapeHtml(c.group)}</span></td>
+        <td style="font-size:var(--text-sm);color:var(--text-muted);">${escapeHtml(c.joined)}</td>
+        <td style="font-size:var(--text-sm);color:var(--text-muted);">${escapeHtml(c.last)}</td>
+        <td><span class="badge ${statusBadge[c.status]||'badge-info'}">${escapeHtml(c.status)}</span></td>
+        <td>
+          <div class="table-actions">
+            <div class="action-btn" title="عرض"><i class="fas fa-eye"></i></div>
+            <div class="action-btn" title="تعديل"><i class="fas fa-pen"></i></div>
+            <div class="action-btn" title="رسالة"><i class="fas fa-paper-plane"></i></div>
+            <div class="action-btn delete" title="حذف"><i class="fas fa-trash"></i></div>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function renderCards(data) {
+    document.getElementById('cardsContainer').innerHTML = data.map(c => `
+      <div class="card" style="cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4);">
+          <div class="client-avatar" style="width:44px;height:44px;font-size:var(--text-base);">${escapeHtml(initials(c.name))}</div>
+          <div>
+            <div style="font-weight:600;font-size:var(--text-base);color:var(--text-primary);">${escapeHtml(c.name)}</div>
+            <span class="badge ${statusBadge[c.status]}">${escapeHtml(c.status)}</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-2);font-size:var(--text-xs);color:var(--text-muted);">
+          <span><i class="fas fa-envelope" style="width:16px;color:var(--gold-700);"></i> ${escapeHtml(c.email)}</span>
+          <span><i class="fas fa-phone" style="width:16px;color:var(--gold-700);"></i> ${escapeHtml(c.phone)}</span>
+          <span><i class="fas fa-clock" style="width:16px;color:var(--gold-700);"></i> ${escapeHtml(c.last)}</span>
+        </div>
+        <div style="display:flex;gap:var(--space-2);margin-top:var(--space-4);">
+          <button class="btn btn-outline btn-sm" style="flex:1;font-size:11px;"><i class="fas fa-eye"></i> عرض</button>
+          <button class="btn btn-primary btn-sm" style="flex:1;font-size:11px;"><i class="fas fa-paper-plane"></i> رسالة</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  renderTable(clients);
+  renderCards(clients);
+
+  function filterTable(q) {
+    const term = q.trim().toLowerCase();
+    const filtered = clients.filter(c =>
+      c.name.toLowerCase().includes(term) ||
+      c.email.toLowerCase().includes(term) ||
+      c.phone.toLowerCase().includes(term)
+    );
+    renderTable(filtered);
+    renderCards(filtered);
+  }
+
+  function switchView(view, btn) {
+    document.getElementById('tableView').style.display = view === 'table' ? 'block' : 'none';
+    document.getElementById('cardsView').style.display = view === 'cards' ? 'block' : 'none';
+    btn.closest('.tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function toggleSelectAll(cb) {
+    document.querySelectorAll('.row-check').forEach(c => c.checked = cb.checked);
+    updateBulk();
+  }
+
+  function updateBulk() {
+    const checked = document.querySelectorAll('.row-check:checked').length;
+    const bar = document.getElementById('bulkBar');
+    bar.classList.toggle('visible', checked > 0);
+    document.getElementById('selectedCount').textContent = `${checked} عميل محدد`;
+
+    const selectAll = document.getElementById('selectAll');
+    const total     = document.querySelectorAll('.row-check').length;
+    selectAll.indeterminate = checked > 0 && checked < total;
+    selectAll.checked       = checked === total;
+  }
+
+  function openAddModal()  { document.getElementById('addModal').classList.add('open'); }
+  function closeAddModal() { document.getElementById('addModal').classList.remove('open'); }
+  function openImport()    { document.getElementById('importModal').classList.add('open'); }
+  function closeImport()   { document.getElementById('importModal').classList.remove('open'); }
+
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      this.closest('.tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

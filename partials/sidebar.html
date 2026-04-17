@@ -1,0 +1,81 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     SHARED SIDEBAR + NAVBAR COMPONENT
+     Include this snippet in every dashboard page
+═══════════════════════════════════════════════════════════════ -->
+
+<!-- ─── SIDEBAR ─────────────────────────────────────────────── -->
+<aside class="sidebar" id="sidebar">
+
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon">M</div>
+    <span class="sidebar-logo-text">MMM</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <span class="nav-section-label">الرئيسي</span>
+
+    <a href="dashboard.html" class="nav-item" data-page="dashboard">
+      <i class="nav-icon fas fa-chart-pie"></i>
+      <span>لوحة التحكم</span>
+    </a>
+
+    <a href="customers.html" class="nav-item" data-page="customers">
+      <i class="nav-icon fas fa-users"></i>
+      <span>إدارة العملاء</span>
+    </a>
+
+    <a href="messages.html" class="nav-item" data-page="messages">
+      <i class="nav-icon fas fa-comment-dots"></i>
+      <span>الرسائل</span>
+      <span class="badge badge-gold" style="margin-right:auto;">3</span>
+    </a>
+
+    <span class="nav-section-label">الإعدادات</span>
+
+    <a href="fields.html" class="nav-item" data-page="fields">
+      <i class="nav-icon fas fa-sliders"></i>
+      <span>الحقول الديناميكية</span>
+    </a>
+
+    <a href="modules.html" class="nav-item" data-page="modules">
+      <i class="nav-icon fas fa-cubes"></i>
+      <span>الميزات</span>
+    </a>
+
+    <a href="permissions.html" class="nav-item" data-page="permissions">
+      <i class="nav-icon fas fa-shield-halved"></i>
+      <span>الصلاحيات والأدوار</span>
+    </a>
+
+    <a href="settings.html" class="nav-item" data-page="settings">
+      <i class="nav-icon fas fa-gear"></i>
+      <span>الإعدادات</span>
+    </a>
+
+    <span class="nav-section-label">النظام</span>
+
+    <a href="#" class="nav-item" data-page="notifications">
+      <i class="nav-icon fas fa-bell"></i>
+      <span>الإشعارات</span>
+      <span class="badge badge-gold" style="margin-right:auto;">7</span>
+    </a>
+
+    <a href="#" class="nav-item">
+      <i class="nav-icon fas fa-file-chart-column"></i>
+      <span>التقارير</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">م</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">محمد المنصور</div>
+        <div style="font-size:var(--text-xs);color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">admin@mmm.com</div>
+      </div>
+      <i class="fas fa-ellipsis-vertical" style="color:var(--text-muted);font-size:14px;"></i>
+    </div>
+  </div>
+
+</aside>
+<!-- ─── END SIDEBAR ──────────────────────────────────────────── -->

@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>الإعدادات — MMM</title>
+  <link rel="stylesheet" href="assets/css/design-system.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .settings-layout { display: grid; grid-template-columns: 220px 1fr; gap: var(--space-6); }
+
+    .settings-nav {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      position: sticky;
+      top: calc(var(--navbar-height) + var(--space-6));
+    }
+
+    .settings-nav-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: 10px var(--space-4);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      border: 1px solid transparent;
+    }
+
+    .settings-nav-item:hover { background: var(--bg-card); color: var(--text-secondary); }
+    .settings-nav-item.active { background: var(--accent-muted); color: var(--gold-400); border-color: var(--accent-border); }
+    .settings-nav-item i { width: 18px; text-align: center; }
+
+    .settings-section { display: none; }
+    .settings-section.active { display: block; }
+
+    .section-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-5);
+    }
+
+    .section-card-header {
+      padding: var(--space-5) var(--space-6);
+      border-bottom: 1px solid var(--border-default);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .section-card-icon {
+      width: 40px; height: 40px;
+      background: var(--accent-muted);
+      border: 1px solid var(--accent-border);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-500);
+      font-size: 18px;
+    }
+
+    .section-card-title { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; }
+    .section-card-desc  { font-size: var(--text-xs); color: var(--text-muted); }
+
+    .section-card-body { padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-5); }
+
+    .settings-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-6);
+      padding-bottom: var(--space-5);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .settings-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .settings-row-info { flex: 1; }
+    .settings-row-title { font-size: var(--text-sm); font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+    .settings-row-desc  { font-size: var(--text-xs); color: var(--text-muted); line-height: 1.6; }
+
+    .settings-row-control { flex-shrink: 0; min-width: 200px; }
+
+    .danger-zone {
+      background: rgba(239,68,68,0.05);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+    }
+
+    .logo-upload {
+      display: flex;
+      align-items: center;
+      gap: var(--space-5);
+    }
+
+    .logo-preview {
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, var(--gold-700), var(--gold-400));
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 2rem;
+      color: var(--black-900);
+      box-shadow: var(--shadow-gold);
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 900px) {
+      .settings-layout { grid-template-columns: 1fr; }
+      .settings-nav { flex-direction: row; flex-wrap: wrap; position: static; }
+      .settings-row { flex-direction: column; }
+      .settings-row-control { min-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+<div class="dashboard-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">M</div><span class="sidebar-logo-text">MMM</span></div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">الرئيسي</span>
+      <a href="dashboard.html" class="nav-item"><i class="nav-icon fas fa-chart-pie"></i><span>لوحة التحكم</span></a>
+      <a href="customers.html" class="nav-item"><i class="nav-icon fas fa-users"></i><span>إدارة العملاء</span></a>
+      <a href="messages.html" class="nav-item"><i class="nav-icon fas fa-comment-dots"></i><span>الرسائل</span></a>
+      <span class="nav-section-label">الإعدادات</span>
+      <a href="fields.html" class="nav-item"><i class="nav-icon fas fa-sliders"></i><span>الحقول الديناميكية</span></a>
+      <a href="modules.html" class="nav-item"><i class="nav-icon fas fa-cubes"></i><span>الميزات</span></a>
+      <a href="permissions.html" class="nav-item"><i class="nav-icon fas fa-shield-halved"></i><span>الصلاحيات</span></a>
+      <a href="settings.html" class="nav-item active"><i class="nav-icon fas fa-gear"></i><span>الإعدادات</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card"><div class="user-avatar">م</div><div style="flex:1;min-width:0;"><div style="font-size:var(--text-sm);font-weight:600;">محمد المنصور</div><div style="font-size:var(--text-xs);color:var(--text-muted);">admin@mmm.com</div></div></div>
+    </div>
+  </aside>
+
+  <div class="dashboard-content">
+    <nav class="dashboard-navbar">
+      <div style="font-family:var(--font-display);font-size:var(--text-lg);color:var(--text-secondary);">
+        <i class="fas fa-gear" style="color:var(--gold-600);margin-left:var(--space-2);"></i>
+        الإعدادات
+      </div>
+      <div class="navbar-actions">
+        <button class="btn btn-primary btn-sm" onclick="saveSettings()"><i class="fas fa-save"></i> حفظ التغييرات</button>
+        <div class="user-avatar" style="width:34px;height:34px;font-size:var(--text-xs);margin-right:var(--space-3);">م</div>
+      </div>
+    </nav>
+
+    <div class="page-content">
+      <div class="page-header">
+        <div><h1 class="page-title">إعدادات النظام</h1><p class="page-subtitle">إدارة تفضيلات المنصة والميزات والحساب</p></div>
+      </div>
+
+      <div class="settings-layout">
+
+        <!-- LEFT NAV -->
+        <div class="settings-nav">
+          <div class="settings-nav-item active" onclick="switchSettings('general', this)">
+            <i class="fas fa-globe"></i> عام
+          </div>
+          <div class="settings-nav-item" onclick="switchSettings('profile', this)">
+            <i class="fas fa-user-circle"></i> الملف الشخصي
+          </div>
+          <div class="settings-nav-item" onclick="switchSettings('features', this)">
+            <i class="fas fa-toggle-on"></i> الميزات
+          </div>
+          <div class="settings-nav-item" onclick="switchSettings('sms', this)">
+            <i class="fas fa-comment-sms"></i> إعداد SMS
+          </div>
+          <div class="settings-nav-item" onclick="switchSettings('security', this)">
+            <i class="fas fa-shield-halved"></i> الأمان
+          </div>
+          <div class="settings-nav-item" onclick="switchSettings('notifications', this)">
+            <i class="fas fa-bell"></i> الإشعارات
+          </div>
+          <div class="settings-nav-item" onclick="switchSettings('billing', this)">
+            <i class="fas fa-credit-card"></i> الاشتراك
+          </div>
+          <div class="settings-nav-item" onclick="switchSettings('danger', this)" style="color:var(--danger);margin-top:auto;">
+            <i class="fas fa-triangle-exclamation"></i> منطقة الخطر
+          </div>
+        </div>
+
+        <!-- RIGHT CONTENT -->
+        <div>
+
+          <!-- GENERAL -->
+          <div class="settings-section active" id="settings-general">
+
+            <div class="section-card">
+              <div class="section-card-header">
+                <div class="section-card-icon"><i class="fas fa-building"></i></div>
+                <div>
+                  <div class="section-card-title">معلومات الشركة</div>
+                  <div class="section-card-desc">اسم المنصة والهوية البصرية</div>
+                </div>
+              </div>
+              <div class="section-card-body">
+
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-title">شعار المنصة</div>
+                    <div class="settings-row-desc">يظهر في الـ Sidebar والنظام. الحجم المثالي: 200×200px</div>
+                  </div>
+                  <div class="settings-row-control">
+                    <div class="logo-upload">
+                      <div class="logo-preview">M</div>
+                      <div>
+                        <button class="btn btn-outline btn-sm"><i class="fas fa-upload"></i> تغيير الشعار</button>
+                        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">PNG, SVG · حد أقصى 2MB</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-title">اسم المنصة</div>
+                    <div class="settings-row-desc">يظهر في النظام والرسائل التلقائية</div>
+                  </div>
+                  <div class="settings-row-control">
+                    <input type="text" class="form-control" value="MMM Platform" />
+                  </div>
+                </div>
+
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-title">اسم المرسل (SMS Sender ID)</div>
+                    <div class="settings-row-desc">يظهر كاسم المرسل في الرسائل النصية</div>
+                  </div>
+                  <div class="settings-row-control">
+                    <input type="text" class="form-control" value="MMM" style="direction:ltr;" />
+                  </div>
+                </div>
+
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-title">المنطقة الزمنية الافتراضية</div>
+                    <div class="settings-row-desc">تُستخدم في جدولة الرسائل والتقارير</div>
+                  </div>
+                  <div class="settings-row-control">
+                    <select class="form-control form-select">
+                      <option selected>توقيت الرياض (GMT+3)</option>
+                      <option>توقيت دبي (GMT+4)</option>
+                      <option>توقيت القاهرة (GMT+2)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-title">لغة الواجهة</div>
+                    <div class="settings-row-desc">لغة لوحة التحكم</div>
+                  </div>
+                  <div class="settings-row-control">
+                    <select class="form-control form-select">
+                      <option selected>العربية</option>
+                      <option>English</option>
+                    </select>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <!-- PROFILE -->
+          <div class="settings-section" id="settings-profile">
+            <div class="section-card">
+              <div class="section-card-header">
+                <div class="section-card-icon"><i class="fas fa-user-circle"></i></div>
+                <div><div class="section-card-title">الملف الشخصي</div><div class="section-card-desc">بيانات حسابك الشخصي</div></div>
+              </div>
+              <div class="section-card-body">
+                <div class="settings-row">
+                  <div class="settings-row-info"><div class="settings-row-title">الاسم الكامل</div></div>
+                  <div class="settings-row-control"><input type="text" class="form-control" value="محمد المنصور" /></div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info"><div class="settings-row-title">البريد الإلكتروني</div></div>
+                  <div class="settings-row-control"><input type="email" class="form-control" value="admin@mmm.com" /></div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info"><div class="settings-row-title">رقم الهاتف</div></div>
+                  <div class="settings-row-control"><input type="tel" class="form-control" value="+966501234567" /></div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info"><div class="settings-row-title">كلمة المرور</div><div class="settings-row-desc">آخر تغيير: منذ 30 يومًا</div></div>
+                  <div class="settings-row-control"><button class="btn btn-outline btn-sm w-full"><i class="fas fa-key"></i> تغيير كلمة المرور</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FEATURES -->
+          <div class="settings-section" id="settings-features">
+            <div class="section-card">
+              <div class="section-card-header">
+                <div class="section-card-icon"><i class="fas fa-toggle-on"></i></div>
+                <div><div class="section-card-title">تفعيل الميزات</div><div class="section-card-desc">تحكم في ميزات المنصة</div></div>
+              </div>
+              <div class="section-card-body">
+
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-title">الرسائل الجماعية</div>
+                    <div class="settings-row-desc">السماح بإرسال رسائل لكل العملاء دفعة واحدة</div>
+                  </div>
+                  <div class="settings-row-control" style="display:flex;justify-content:flex-end;">
+                    <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div></label>
+                  </div>
+                </div>
+
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-title">الجدولة الزمنية</div>
+                    <div class="settings-row-desc">السماح بجدولة الرسائل لوقت لاحق</div>
+                  </div>
+                  <div class="settings-row-control" style="display:flex;justify-content:flex-end;">
+                    <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div></label>
+                  </div>
+                </div>
+
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-title">استيراد CSV</div>
+                    <div class="settings-row-desc">السماح بالاستيراد الجماعي للعملاء</div>
+                  </div>
+                  <div class="settings-row-control" style="display:flex;justify-content:flex-end;">
+                    <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div></label>
+                  </div>
+                </div>
+
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-title">واجهة API العامة</div>
+                    <div class="settings-row-desc">الوصول للبيانات عبر API خارجية</div>
+                  </div>
+                  <div class="settings-row-control" style="display:flex;justify-content:flex-end;">
+                    <label class="toggle"><input type="checkbox" /><div class="toggle-track"></div></label>
+                  </div>
+                </div>
+
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-title">تتبع الرسائل</div>
+                    <div class="settings-row-desc">تتبع حالة التسليم والقراءة لكل رسالة</div>
+                  </div>
+                  <div class="settings-row-control" style="display:flex;justify-content:flex-end;">
+                    <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div></label>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- SMS SETTINGS -->
+          <div class="settings-section" id="settings-sms">
+            <div class="section-card">
+              <div class="section-card-header">
+                <div class="section-card-icon"><i class="fas fa-comment-sms"></i></div>
+                <div><div class="section-card-title">إعداد SMS</div><div class="section-card-desc">ربط مزود خدمة الرسائل</div></div>
+              </div>
+              <div class="section-card-body">
+                <div class="settings-row">
+                  <div class="settings-row-info"><div class="settings-row-title">المزوّد</div></div>
+                  <div class="settings-row-control">
+                    <select class="form-control form-select">
+                      <option>Twilio</option><option>Unifonic</option><option>Stc</option><option>Mobily</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info"><div class="settings-row-title">API Key</div></div>
+                  <div class="settings-row-control">
+                    <div class="input-group">
+                      <input type="password" class="form-control" id="apiKey" value="sk_live_xxxxxxxxxxxx" style="direction:ltr;" />
+                      <span class="input-icon" style="cursor:pointer;" onclick="togglePassword('apiKey',this)"><i class="fas fa-eye"></i></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info"><div class="settings-row-title">رصيد SMS المتبقي</div></div>
+                  <div class="settings-row-control">
+                    <div style="display:flex;align-items:center;gap:var(--space-3);">
+                      <span style="font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--gold-400);">4,820</span>
+                      <button class="btn btn-outline btn-sm"><i class="fas fa-plus"></i> شحن</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECURITY -->
+          <div class="settings-section" id="settings-security">
+            <div class="section-card">
+              <div class="section-card-header">
+                <div class="section-card-icon"><i class="fas fa-shield-halved"></i></div>
+                <div><div class="section-card-title">الأمان</div><div class="section-card-desc">حماية الحساب والوصول</div></div>
+              </div>
+              <div class="section-card-body">
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-title">التحقق بخطوتين (2FA)</div>
+                    <div class="settings-row-desc">طبقة حماية إضافية عند تسجيل الدخول</div>
+                  </div>
+                  <div class="settings-row-control" style="display:flex;justify-content:flex-end;">
+                    <label class="toggle"><input type="checkbox" /><div class="toggle-track"></div></label>
+                  </div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-title">مهلة الجلسة</div>
+                    <div class="settings-row-desc">تلقائي تسجيل الخروج بعد فترة خمول</div>
+                  </div>
+                  <div class="settings-row-control">
+                    <select class="form-control form-select">
+                      <option>30 دقيقة</option><option selected>ساعة</option><option>4 ساعات</option><option>يوم كامل</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-title">تسجيل النشاطات (Audit Log)</div>
+                    <div class="settings-row-desc">تسجيل جميع العمليات للمراجعة</div>
+                  </div>
+                  <div class="settings-row-control" style="display:flex;justify-content:flex-end;">
+                    <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div></label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- NOTIFICATIONS -->
+          <div class="settings-section" id="settings-notifications">
+            <div class="section-card">
+              <div class="section-card-header">
+                <div class="section-card-icon"><i class="fas fa-bell"></i></div>
+                <div><div class="section-card-title">الإشعارات</div><div class="section-card-desc">تحكم في إشعارات النظام</div></div>
+              </div>
+              <div class="section-card-body">
+                <div class="settings-row">
+                  <div class="settings-row-info"><div class="settings-row-title">إشعار عند إضافة عميل جديد</div></div>
+                  <div class="settings-row-control" style="display:flex;justify-content:flex-end;"><label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div></label></div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info"><div class="settings-row-title">إشعار عند إتمام إرسال حملة</div></div>
+                  <div class="settings-row-control" style="display:flex;justify-content:flex-end;"><label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div></label></div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info"><div class="settings-row-title">إشعار عند نفاد رصيد SMS</div></div>
+                  <div class="settings-row-control" style="display:flex;justify-content:flex-end;"><label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div></label></div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info"><div class="settings-row-title">إشعارات البريد الإلكتروني</div></div>
+                  <div class="settings-row-control" style="display:flex;justify-content:flex-end;"><label class="toggle"><input type="checkbox" /><div class="toggle-track"></div></label></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BILLING -->
+          <div class="settings-section" id="settings-billing">
+            <div class="section-card">
+              <div class="section-card-header">
+                <div class="section-card-icon"><i class="fas fa-crown"></i></div>
+                <div>
+                  <div class="section-card-title">اشتراكك الحالي</div>
+                  <div class="section-card-desc">الباقة الاحترافية</div>
+                </div>
+              </div>
+              <div class="section-card-body">
+                <div style="background:var(--accent-muted);border:1px solid var(--accent-border);border-radius:var(--radius-lg);padding:var(--space-6);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-4);">
+                  <div>
+                    <div style="font-family:var(--font-display);font-size:var(--text-2xl);color:var(--gold-400);font-weight:700;">الباقة الاحترافية</div>
+                    <div style="font-size:var(--text-sm);color:var(--text-muted);margin-top:4px;">$79 / شهريًا · التجديد في 17 مايو 2025</div>
+                  </div>
+                  <div style="text-align:left;">
+                    <div style="font-family:var(--font-display);font-size:var(--text-3xl);color:var(--gold-400);font-weight:700;">$79</div>
+                    <button class="btn btn-outline btn-sm" style="margin-top:var(--space-2);">ترقية الباقة</button>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4);">
+                  <div class="card-stat" style="text-align:center;">
+                    <div style="font-size:var(--text-xs);color:var(--text-muted);margin-bottom:4px;">العملاء</div>
+                    <div style="font-family:var(--font-display);font-size:var(--text-xl);color:var(--gold-400);font-weight:700;">2,847 / ∞</div>
+                    <div class="progress-bar" style="margin-top:var(--space-3);"><div class="progress-fill" style="width:0%"></div></div>
+                  </div>
+                  <div class="card-stat" style="text-align:center;">
+                    <div style="font-size:var(--text-xs);color:var(--text-muted);margin-bottom:4px;">رسائل هذا الشهر</div>
+                    <div style="font-family:var(--font-display);font-size:var(--text-xl);color:var(--gold-400);font-weight:700;">8,492 / 10K</div>
+                    <div class="progress-bar" style="margin-top:var(--space-3);"><div class="progress-fill" style="width:85%"></div></div>
+                  </div>
+                  <div class="card-stat" style="text-align:center;">
+                    <div style="font-size:var(--text-xs);color:var(--text-muted);margin-bottom:4px;">المستخدمون</div>
+                    <div style="font-family:var(--font-display);font-size:var(--text-xl);color:var(--gold-400);font-weight:700;">4 / 10</div>
+                    <div class="progress-bar" style="margin-top:var(--space-3);"><div class="progress-fill" style="width:40%"></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DANGER ZONE -->
+          <div class="settings-section" id="settings-danger">
+            <div class="danger-zone">
+              <h3 style="color:var(--danger);font-family:var(--font-display);font-size:var(--text-xl);margin-bottom:var(--space-5);">
+                <i class="fas fa-triangle-exclamation"></i> منطقة الخطر
+              </h3>
+              <div class="settings-row" style="padding-bottom:var(--space-5);">
+                <div class="settings-row-info">
+                  <div class="settings-row-title" style="color:#fca5a5;">حذف جميع البيانات</div>
+                  <div class="settings-row-desc">حذف نهائي لكل العملاء والرسائل والإعدادات. لا يمكن التراجع.</div>
+                </div>
+                <div class="settings-row-control">
+                  <button class="btn btn-danger btn-sm" onclick="confirmDanger('حذف جميع البيانات')"><i class="fas fa-trash"></i> حذف الكل</button>
+                </div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-title" style="color:#fca5a5;">حذف الحساب نهائيًا</div>
+                  <div class="settings-row-desc">إغلاق الحساب وحذف كل المعلومات المرتبطة به.</div>
+                </div>
+                <div class="settings-row-control">
+                  <button class="btn btn-danger btn-sm" onclick="confirmDanger('حذف الحساب')"><i class="fas fa-user-xmark"></i> حذف الحساب</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Save Toast -->
+<div class="toast-container">
+  <div class="toast toast-success" id="saveToast" style="display:none;">
+    <i class="fas fa-check-circle" style="color:var(--success);font-size:20px;"></i>
+    <div>
+      <div style="font-weight:600;font-size:var(--text-sm);color:var(--text-primary);">تم الحفظ</div>
+      <div style="font-size:var(--text-xs);color:var(--text-muted);">تم حفظ الإعدادات بنجاح</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function switchSettings(name, el) {
+    document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.settings-nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('settings-' + name).classList.add('active');
+    el.classList.add('active');
+  }
+
+  function saveSettings() {
+    const t = document.getElementById('saveToast');
+    t.style.display = 'flex';
+    setTimeout(() => t.style.display = 'none', 3000);
+  }
+
+  function togglePassword(id, btn) {
+    const input = document.getElementById(id);
+    const icon  = btn.querySelector('i');
+    if (input.type === 'password') { input.type = 'text'; icon.classList.replace('fa-eye','fa-eye-slash'); }
+    else { input.type = 'password'; icon.classList.replace('fa-eye-slash','fa-eye'); }
+  }
+
+  function confirmDanger(action) {
+    if (confirm(`تحذير: هل أنت متأكد من "${action}"؟ هذه العملية لا يمكن التراجع عنها.`)) {
+      alert('تم إرسال طلب التأكيد إلى بريدك الإلكتروني.');
+    }
+  }
+</script>
+</body>
+</html>
