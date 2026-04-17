@@ -303,24 +303,29 @@
       else { input.type = 'password'; icon.classList.replace('fa-eye-slash','fa-eye'); }
     }
 
-    // Determine API base URL based on environment
+    // =============================================
+    // API Base URL Detection
+    // =============================================
     function getAPIBase() {
+      // 1. Manually overridden
       const stored = localStorage.getItem('apiBase');
       if (stored) return stored;
 
       const hostname = window.location.hostname;
 
-      // GitHub Codespaces: hostname looks like xxx-5173.app.github.dev
-      // API is on port 4000 → hostname becomes xxx-4000.app.github.dev
+      // 2. GitHub Codespaces: xxx-5173.app.github.dev → xxx-4000.app.github.dev
       if (hostname.includes('.app.github.dev') || hostname.includes('.github.dev')) {
-        const apiBase = window.location.origin
+        return window.location.origin
           .replace(/-5173\./, '-4000.')
           .replace(/:5173/, ':4000');
-        console.log('🌐 Codespaces detected, API base:', apiBase);
-        return apiBase;
       }
 
-      // Local development
+      // 3. GitHub Pages → Render backend
+      if (hostname.includes('github.io')) {
+        return 'https://mmm-api.onrender.com';
+      }
+
+      // 4. Local development
       return 'http://localhost:4000';
     }
 
