@@ -28,11 +28,11 @@ export const messagesRepository = {
   async updateMessageStatus(messageId: string, status: string, patch?: { providerMessageId?: string; errorCode?: string; errorMessage?: string }) {
     const query = `
       UPDATE sms_messages
-      SET status = $2,
+      SET status = $2::message_status,
           provider_message_id = COALESCE($3, provider_message_id),
           error_code = COALESCE($4, error_code),
           error_message = COALESCE($5, error_message),
-          sent_at = CASE WHEN $2 = 'sent' THEN now() ELSE sent_at END
+          sent_at = CASE WHEN $2::message_status = 'sent'::message_status THEN now() ELSE sent_at END
       WHERE id = $1
       RETURNING *
     `;
@@ -99,9 +99,9 @@ export const messagesRepository = {
     const query = `
       UPDATE scheduled_messages
       SET last_run_at = now(),
-          next_run_at = $2,
+          next_run_at = $2::timestamptz,
           updated_at = now(),
-          active = CASE WHEN $2 IS NULL THEN FALSE ELSE active END
+          active = CASE WHEN $2::timestamptz IS NULL THEN FALSE ELSE active END
       WHERE id = $1
     `;
     await db.query(query, [scheduleId, nextRunAt]);
