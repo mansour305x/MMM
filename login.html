@@ -407,33 +407,50 @@
       const loginBtn = document.getElementById('loginBtn');
       const errorMsg = document.getElementById('errorMessage');
 
+      console.log('Login page loaded', { form, loginBtn, errorMsg, API_BASE });
+
       if (form) {
         form.addEventListener('submit', async (e) => {
           e.preventDefault();
           
-          const identifier = document.getElementById('email').value.trim();
-          const password = document.getElementById('password').value;
+          const email = document.getElementById('email');
+          const password = document.getElementById('password');
+          
+          console.log('Form submitted', { email: email?.value, password: password?.value });
 
-          if (!identifier || !password) {
+          if (!email?.value || !password?.value) {
             showError('البريد الإلكتروني وكلمة المرور مطلوبة');
             return;
           }
+
+          const identifier = email.value.trim();
+          const pass = password.value;
 
           loginBtn.disabled = true;
           loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التسجيل...';
           errorMsg.style.display = 'none';
 
           try {
+            console.log('Sending login request to:', `${API_BASE}/api/auth/login`);
+            
             const response = await fetch(`${API_BASE}/api/auth/login`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ identifier, password })
+              credentials: 'include',
+              body: JSON.stringify({ identifier, password: pass })
             });
 
+            console.log('Response status:', response.status, response.ok);
+
             const data = await response.json();
+            console.log('Response data:', data);
 
             if (!response.ok) {
-              throw new Error(data.message || 'خطأ في تسجيل الدخول');
+              throw new Error(data.message || `خطأ ${response.status}: تسجيل الدخول فشل`);
+            }
+
+            if (!data.accessToken) {
+              throw new Error('لم يتم الحصول على التوكن من الخادم');
             }
 
             // Save tokens
@@ -441,18 +458,26 @@
             localStorage.setItem('refreshToken', data.refreshToken);
             localStorage.setItem('user', JSON.stringify(data.user));
 
+            console.log('Login successful! Redirecting...');
+            
             // Redirect to dashboard
-            window.location.href = '/dashboard.html';
+            setTimeout(() => {
+              window.location.href = '/dashboard.html';
+            }, 500);
 
           } catch (error) {
-            showError(error.message || 'حدث خطأ في الاتصال. تأكد من تشغيل الخادم.');
+            console.error('Login error:', error);
+            showError(error.message || 'حدث خطأ في الاتصال. افتح متصفح Developer Tools (F12) لرؤية التفاصيل.');
             loginBtn.disabled = false;
             loginBtn.innerHTML = 'تسجيل الدخول';
           }
         });
+      } else {
+        console.error('Login form not found!');
       }
 
       function showError(message) {
+        console.error('Error:', message);
         errorMsg.textContent = message;
         errorMsg.style.display = 'block';
       }
