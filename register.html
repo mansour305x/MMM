@@ -166,23 +166,25 @@
           </p>
         </div>
 
-        <form class="auth-form" onsubmit="return false;">
+        <form class="auth-form" id="registerForm">
+
+          <div id="errorMessage" style="display: none; background: rgba(220, 53, 69, 0.1); color: #dc3545; padding: 12px; border-radius: 6px; font-size: var(--text-sm); margin-bottom: var(--space-4);"></div>
 
           <div class="form-row">
             <div class="form-group">
               <label class="form-label"><i class="fas fa-user" style="color: var(--gold-600);"></i> الاسم الأول</label>
-              <input type="text" class="form-control" placeholder="محمد" />
+              <input type="text" id="firstName" class="form-control" placeholder="محمد" required />
             </div>
             <div class="form-group">
               <label class="form-label">الاسم الأخير</label>
-              <input type="text" class="form-control" placeholder="أحمد" />
+              <input type="text" id="lastName" class="form-control" placeholder="أحمد" required />
             </div>
           </div>
 
           <div class="form-group">
             <label class="form-label"><i class="fas fa-envelope" style="color: var(--gold-600);"></i> البريد الإلكتروني</label>
             <div class="input-group">
-              <input type="email" class="form-control" placeholder="example@company.com" />
+              <input type="email" id="email" class="form-control" placeholder="example@company.com" required />
               <span class="input-icon"><i class="fas fa-envelope"></i></span>
             </div>
           </div>
@@ -190,7 +192,7 @@
           <div class="form-group">
             <label class="form-label"><i class="fas fa-phone" style="color: var(--gold-600);"></i> رقم الهاتف</label>
             <div class="input-group">
-              <input type="tel" class="form-control" placeholder="+966 5X XXX XXXX" />
+              <input type="tel" id="phone" class="form-control" placeholder="+966 5X XXX XXXX" />
               <span class="input-icon"><i class="fas fa-phone"></i></span>
             </div>
           </div>
@@ -198,7 +200,7 @@
           <div class="form-group">
             <label class="form-label"><i class="fas fa-building" style="color: var(--gold-600);"></i> اسم الشركة</label>
             <div class="input-group">
-              <input type="text" class="form-control" placeholder="MMM Corporation" />
+              <input type="text" id="company" class="form-control" placeholder="MMM Corporation" />
               <span class="input-icon"><i class="fas fa-building"></i></span>
             </div>
           </div>
@@ -206,7 +208,7 @@
           <div class="form-group">
             <label class="form-label"><i class="fas fa-lock" style="color: var(--gold-600);"></i> كلمة المرور</label>
             <div class="input-group">
-              <input type="password" class="form-control" id="pw1" placeholder="8 أحرف على الأقل" oninput="checkStrength(this.value)" />
+              <input type="password" class="form-control" id="pw1" placeholder="8 أحرف على الأقل" oninput="checkStrength(this.value)" required />
               <span class="input-icon" style="cursor:pointer;" onclick="togglePassword('pw1', this)">
                 <i class="fas fa-eye"></i>
               </span>
@@ -225,7 +227,7 @@
           <div class="form-group">
             <label class="form-label">تأكيد كلمة المرور</label>
             <div class="input-group">
-              <input type="password" class="form-control" id="pw2" placeholder="أعد إدخال كلمة المرور" />
+              <input type="password" class="form-control" id="pw2" placeholder="أعد إدخال كلمة المرور" required />
               <span class="input-icon" style="cursor:pointer;" onclick="togglePassword('pw2', this)">
                 <i class="fas fa-eye"></i>
               </span>
@@ -233,13 +235,13 @@
           </div>
 
           <div class="terms-row">
-            <input type="checkbox" id="terms" style="width:18px; height:18px; accent-color: var(--gold-500); cursor:pointer; flex-shrink:0; margin-top:2px;" />
+            <input type="checkbox" id="terms" style="width:18px; height:18px; accent-color: var(--gold-500); cursor:pointer; flex-shrink:0; margin-top:2px;" required />
             <label for="terms" style="font-size: var(--text-sm); color: var(--text-secondary); cursor:pointer; line-height: 1.6;">
               أوافق على <a href="#">شروط الاستخدام</a> و<a href="#">سياسة الخصوصية</a> وعمر حسابي لا يقل عن 18 سنة
             </label>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-lg w-full" style="margin-top: var(--space-2);">
+          <button type="submit" id="submitBtn" class="btn btn-primary btn-lg w-full" style="margin-top: var(--space-2);">
             <i class="fas fa-user-plus"></i>
             إنشاء الحساب
           </button>
@@ -301,6 +303,8 @@
       else { input.type = 'password'; icon.classList.replace('fa-eye-slash','fa-eye'); }
     }
 
+    const API_BASE = localStorage.getItem('apiBase') || 'http://localhost:4000';
+
     function checkStrength(val) {
       const bars  = [document.getElementById('sb1'), document.getElementById('sb2'), document.getElementById('sb3'), document.getElementById('sb4')];
       const label = document.getElementById('strengthLabel');
@@ -318,6 +322,115 @@
       label.textContent = texts[score] || 'أدخل كلمة المرور';
       label.style.color = cls === 'w' ? 'var(--danger)' : cls === 'm' ? 'var(--warning)' : 'var(--success)';
     }
+
+    // Handle Registration Form Submission
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('registerForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const errorMsg = document.getElementById('errorMessage');
+
+      console.log('Registration page loaded', { form, submitBtn, errorMsg, API_BASE });
+
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const firstName = document.getElementById('firstName');
+          const lastName = document.getElementById('lastName');
+          const email = document.getElementById('email');
+          const phone = document.getElementById('phone');
+          const pw1 = document.getElementById('pw1');
+          const pw2 = document.getElementById('pw2');
+          const terms = document.getElementById('terms');
+
+          console.log('Form submitted', { firstName: firstName?.value, email: email?.value });
+
+          // Validation
+          if (!firstName?.value || !email?.value || !pw1?.value) {
+            showError('الاسم والبريد الإلكتروني وكلمة المرور مطلوبة');
+            return;
+          }
+
+          if (pw1.value.length < 8) {
+            showError('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+            return;
+          }
+
+          if (pw1.value !== pw2.value) {
+            showError('كلمات المرور غير متطابقة');
+            return;
+          }
+
+          if (!terms.checked) {
+            showError('يجب الموافقة على الشروط والأحكام');
+            return;
+          }
+
+          const fullName = `${firstName.value} ${lastName.value || ''}`.trim();
+          const password = pw1.value;
+
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإنشاء...';
+          errorMsg.style.display = 'none';
+
+          try {
+            console.log('Sending registration request to:', `${API_BASE}/api/auth/register`);
+            
+            const payload = { 
+              fullName,
+              email: email.value.trim(),
+              password
+            };
+
+            if (phone?.value) payload.phone = phone.value.trim();
+
+            console.log('Request payload:', { ...payload, password: '***' });
+
+            const response = await fetch(`${API_BASE}/api/auth/register`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify(payload)
+            });
+
+            console.log('Response status:', response.status, response.ok);
+
+            const data = await response.json();
+            console.log('Response data:', data);
+
+            if (!response.ok) {
+              throw new Error(data.message || `خطأ ${response.status}: التسجيل فشل`);
+            }
+
+            console.log('Registration successful!');
+            
+            // Show success message
+            showError('تم إنشاء الحساب بنجاح! جاري إعادة التوجيه...');
+            errorMsg.style.color = '#28a745';
+            errorMsg.style.background = 'rgba(40, 167, 69, 0.1)';
+
+            // Redirect to login
+            setTimeout(() => {
+              window.location.href = '/login.html';
+            }, 1500);
+
+          } catch (error) {
+            console.error('Registration error:', error);
+            showError(error.message || 'حدث خطأ في الاتصال. افتح Developer Tools (F12) لرؤية التفاصيل.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> إنشاء الحساب';
+          }
+        });
+      } else {
+        console.error('Registration form not found!');
+      }
+
+      function showError(message) {
+        console.error('Error:', message);
+        errorMsg.textContent = message;
+        errorMsg.style.display = 'block';
+      }
+    });
   </script>
 </body>
 </html>

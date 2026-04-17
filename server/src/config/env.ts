@@ -19,7 +19,7 @@ const envSchema = z.object({
   SMS_SENDER_ID: z.string().default('MMM'),
   RATE_LIMIT_MAX: z.coerce.number().default(100),
   RATE_LIMIT_WINDOW: z.string().default('1 minute'),
-  CORS_ORIGIN: z.string().default('http://localhost:5173')
+  CORS_ORIGIN: z.string().default('http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173')
 });
 
 export const env = envSchema.parse(process.env);

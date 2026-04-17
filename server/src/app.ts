@@ -21,7 +21,18 @@ export function buildApp() {
     }
   });
 
-  app.register(cors, { origin: env.CORS_ORIGIN, credentials: true });
+  // CORS Configuration - Allow all origins in development, specific in production
+  const corsOrigins = env.NODE_ENV === 'production' 
+    ? env.CORS_ORIGIN 
+    : [/localhost/, /127.0.0.1/, /^https?:\/\/[a-z0-9\-\.]+$/i];
+
+  app.register(cors, { 
+    origin: corsOrigins, 
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  });
+
   app.register(helmet);
   app.register(rateLimit, { max: env.RATE_LIMIT_MAX, timeWindow: env.RATE_LIMIT_WINDOW });
 

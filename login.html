@@ -372,7 +372,23 @@
   </div>
 
   <script>
-    const API_BASE = localStorage.getItem('apiBase') || 'http://localhost:4000';
+    // Determine API base URL based on environment
+    function getAPIBase() {
+      // Check if explicitly set in localStorage
+      const stored = localStorage.getItem('apiBase');
+      if (stored) return stored;
+
+      // In production environment
+      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        return `${window.location.protocol}//${window.location.host}`;
+      }
+
+      // In development - default to localhost:4000
+      return 'http://localhost:4000';
+    }
+
+    const API_BASE = getAPIBase();
+    console.log('📡 API Base URL:', API_BASE);
 
     function togglePassword(id, btn) {
       const input = document.getElementById(id);
@@ -407,7 +423,7 @@
       const loginBtn = document.getElementById('loginBtn');
       const errorMsg = document.getElementById('errorMessage');
 
-      console.log('Login page loaded', { form, loginBtn, errorMsg, API_BASE });
+      console.log('✅ Login page loaded', { form: !!form, loginBtn: !!loginBtn, errorMsg: !!errorMsg });
 
       if (form) {
         form.addEventListener('submit', async (e) => {
@@ -416,7 +432,7 @@
           const email = document.getElementById('email');
           const password = document.getElementById('password');
           
-          console.log('Form submitted', { email: email?.value, password: password?.value });
+          console.log('📝 Form submitted');
 
           if (!email?.value || !password?.value) {
             showError('البريد الإلكتروني وكلمة المرور مطلوبة');
@@ -431,19 +447,24 @@
           errorMsg.style.display = 'none';
 
           try {
-            console.log('Sending login request to:', `${API_BASE}/api/auth/login`);
+            const url = `${API_BASE}/api/auth/login`;
+            console.log('🚀 Sending login request to:', url);
             
-            const response = await fetch(`${API_BASE}/api/auth/login`, {
+            const response = await fetch(url, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               credentials: 'include',
               body: JSON.stringify({ identifier, password: pass })
             });
 
-            console.log('Response status:', response.status, response.ok);
+            console.log('📊 Response status:', response.status, response.statusText);
 
             const data = await response.json();
-            console.log('Response data:', data);
+            console.log('📦 Response received:', { 
+              hasToken: !!data.accessToken, 
+              hasUser: !!data.user,
+              status: response.status 
+            });
 
             if (!response.ok) {
               throw new Error(data.message || `خطأ ${response.status}: تسجيل الدخول فشل`);
@@ -457,8 +478,9 @@
             localStorage.setItem('accessToken', data.accessToken);
             localStorage.setItem('refreshToken', data.refreshToken);
             localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem('apiBase', API_BASE);
 
-            console.log('Login successful! Redirecting...');
+            console.log('✨ Login successful! Redirecting to dashboard...');
             
             // Redirect to dashboard
             setTimeout(() => {
@@ -466,18 +488,18 @@
             }, 500);
 
           } catch (error) {
-            console.error('Login error:', error);
+            console.error('❌ Login error:', error.message);
             showError(error.message || 'حدث خطأ في الاتصال. افتح متصفح Developer Tools (F12) لرؤية التفاصيل.');
             loginBtn.disabled = false;
-            loginBtn.innerHTML = 'تسجيل الدخول';
+            loginBtn.innerHTML = '<i class="fas fa-arrow-right-to-bracket"></i> تسجيل الدخول';
           }
         });
       } else {
-        console.error('Login form not found!');
+        console.error('❌ Login form not found!');
       }
 
       function showError(message) {
-        console.error('Error:', message);
+        console.error('⚠️ ERROR:', message);
         errorMsg.textContent = message;
         errorMsg.style.display = 'block';
       }
