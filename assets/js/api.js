@@ -1,5 +1,10 @@
 // Shared API helpers for MMM frontend pages.
 (function initApiLayer(global) {
+  const REMOTE_API_FALLBACKS = [
+    'https://mmmstate2026.loca.lt',
+    'https://mmm-api.onrender.com'
+  ];
+
   function normalizeOrigin(value) {
     return String(value || '').trim().replace(/\/$/, '');
   }
@@ -19,7 +24,7 @@
     }
 
     if (hostname.endsWith('github.io')) {
-      return 'https://mmm-api.onrender.com';
+      return REMOTE_API_FALLBACKS[0];
     }
 
     return normalizeOrigin(`${protocol}//${hostname}${port ? `:${port}` : ''}`);
@@ -41,34 +46,69 @@
   }
 
   async function apiFetch(path, options) {
-    const apiBase = detectApiBase();
-    const url = `${apiBase}${path.startsWith('/') ? path : `/${path}`}`;
+    const initialBase = detectApiBase();
+    const candidates = [initialBase, ...REMOTE_API_FALLBACKS]
+      .map((value) => normalizeOrigin(value))
+      .filter((value, index, list) => value && list.indexOf(value) === index);
+
     const hasBody = options && typeof options === 'object' && 'body' in options && options.body !== undefined && options.body !== null;
     const baseHeaders = hasBody ? { 'Content-Type': 'application/json' } : {};
-    const response = await fetch(url, {
-      credentials: 'include',
-      ...options,
-      headers: {
-        ...baseHeaders,
-        ...(options && options.headers ? options.headers : {})
+
+    let lastError = null;
+
+    for (const apiBase of candidates) {
+      const url = `${apiBase}${path.startsWith('/') ? path : `/${path}`}`;
+
+      try {
+        const response = await fetch(url, {
+          credentials: 'include',
+          ...options,
+          headers: {
+            ...baseHeaders,
+            ...(options && options.headers ? options.headers : {})
+          }
+        });
+
+        const payload = await parseResponseBody(response);
+
+        if (!response.ok) {
+          const message = (payload && payload.message) || `HTTP ${response.status}`;
+          const error = new Error(message);
+          error.status = response.status;
+          error.payload = payload;
+          throw error;
+        }
+
+        localStorage.setItem('apiBase', apiBase);
+        return payload;
+      } catch (error) {
+        lastError = error;
+        const isNetworkError = !error || !('status' in error);
+
+        if (!isNetworkError) {
+          throw error;
+        }
       }
-    });
-
-    const payload = await parseResponseBody(response);
-
-    if (!response.ok) {
-      const message = (payload && payload.message) || `HTTP ${response.status}`;
-      const error = new Error(message);
-      error.status = response.status;
-      error.payload = payload;
-      throw error;
     }
 
-    return payload;
+    throw new Error(
+      `تعذر الاتصال بخدمة API. اضبط عنوان الخادم الصحيح ثم أعد المحاولة. آخر خطأ: ${lastError && lastError.message ? lastError.message : 'Failed to fetch'}`
+    );
+  }
+
+  function setApiBase(value) {
+    const normalized = normalizeOrigin(value);
+    if (!normalized) {
+      localStorage.removeItem('apiBase');
+      return;
+    }
+
+    localStorage.setItem('apiBase', normalized);
   }
 
   global.MMMApi = {
     detectApiBase,
-    apiFetch
+    apiFetch,
+    setApiBase
   };
 })(window);
