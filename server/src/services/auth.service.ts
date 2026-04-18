@@ -8,6 +8,35 @@ import dayjs from 'dayjs';
 import { env } from '../config/env.js';
 import { otpService } from './otp.service.js';
 
+function getRefreshExpiryDate(): string {
+  const raw = env.REFRESH_EXPIRES_IN.trim();
+  const match = raw.match(/^(\d+)([smhdw])$/i);
+  if (!match) {
+    return dayjs().add(30, 'day').toISOString();
+  }
+
+  const value = Number(match[1]);
+  const unitMap: Record<string, dayjs.ManipulateType> = {
+    s: 'second',
+    m: 'minute',
+    h: 'hour',
+    d: 'day',
+    w: 'week'
+  };
+
+  const unit = unitMap[match[2].toLowerCase()] || 'day';
+  return dayjs().add(value, unit).toISOString();
+}
+
+function resolveScope(user: { role_code: string; state_name?: string | null; is_state_account?: boolean }) {
+  const isGlobalOwner = user.role_code === 'owner' && !user.is_state_account;
+  return {
+    scopeType: isGlobalOwner ? 'global' as const : 'state' as const,
+    stateName: user.state_name ?? null,
+    isStateAccount: Boolean(user.is_state_account)
+  };
+}
+
 export const authService = {
   async register(input: { fullName: string; email?: string; phone?: string; password: string }) {
     const role = await rolesRepository.findByCode('member');
@@ -44,11 +73,15 @@ export const authService = {
     if (user.status !== 'active') throw new AppError(403, 'Account is not active');
 
     const permissions = await rolesRepository.listPermissionsByRoleId(user.role_id);
+    const scope = resolveScope(user);
 
     const accessToken = await app.jwt.sign({
       sub: user.id,
       roleCode: user.role_code,
       permissions,
+      stateName: scope.stateName,
+      scopeType: scope.scopeType,
+      isStateAccount: scope.isStateAccount,
       type: 'access'
     });
 
@@ -57,6 +90,9 @@ export const authService = {
         sub: user.id,
         roleCode: user.role_code,
         permissions,
+        stateName: scope.stateName,
+        scopeType: scope.scopeType,
+        isStateAccount: scope.isStateAccount,
         type: 'refresh'
       },
       { expiresIn: env.REFRESH_EXPIRES_IN }
@@ -72,7 +108,7 @@ export const authService = {
         hashToken(refreshRaw),
         input.userAgent ?? null,
         input.ipAddress ?? null,
-        dayjs().add(30, 'day').toISOString()
+        getRefreshExpiryDate()
       ]
     );
 
@@ -85,6 +121,110 @@ export const authService = {
         id: user.id,
         fullName: user.full_name,
         roleCode: user.role_code,
+        stateName: scope.stateName,
+        scopeType: scope.scopeType,
+        isStateAccount: scope.isStateAccount,
+        email: user.email,
+        phone: user.phone,
+        username: user.username ?? null
+      }
+    };
+  },
+
+  async registerStateAccount(input: { stateName: string; password: string }) {
+    const stateName = input.stateName.trim();
+    if (!stateName) throw new AppError(422, 'State name is required');
+    if (input.password.length < 8) throw new AppError(422, 'Password must be at least 8 characters');
+
+    const role = await rolesRepository.findByCode('supervisor');
+    if (!role) throw new AppError(500, 'Default state role not found');
+
+    const existing = await usersRepository.findStateAccountByStateName(stateName);
+    if (existing) throw new AppError(409, 'State account already exists');
+
+    const passwordHash = await hashPassword(input.password);
+    const username = `state:${stateName.toLowerCase()}`;
+
+    const user = await usersRepository.create({
+      roleId: role.id,
+      fullName: `حساب ولاية ${stateName}`,
+      email: null,
+      phone: null,
+      username,
+      stateName,
+      isStateAccount: true,
+      passwordHash
+    });
+
+    return {
+      created: true,
+      user: {
+        id: user.id,
+        username,
+        stateName,
+        roleCode: 'supervisor'
+      }
+    };
+  },
+
+  async loginState(app: FastifyInstance, input: { stateName: string; password: string; userAgent?: string; ipAddress?: string }) {
+    const stateName = input.stateName.trim();
+    if (!stateName) throw new AppError(422, 'State name is required');
+
+    const user = await usersRepository.findStateAccountByStateName(stateName);
+    if (!user) throw new AppError(401, 'Invalid credentials');
+
+    const validPassword = await verifyPassword(input.password, user.password_hash);
+    if (!validPassword) throw new AppError(401, 'Invalid credentials');
+    if (user.status !== 'active') throw new AppError(403, 'Account is not active');
+
+    const permissions = await rolesRepository.listPermissionsByRoleId(user.role_id);
+    const scope = resolveScope(user);
+
+    const accessToken = await app.jwt.sign({
+      sub: user.id,
+      roleCode: user.role_code,
+      permissions,
+      stateName: scope.stateName,
+      scopeType: scope.scopeType,
+      isStateAccount: true,
+      type: 'access'
+    });
+
+    const refreshToken = await app.jwt.sign(
+      {
+        sub: user.id,
+        roleCode: user.role_code,
+        permissions,
+        stateName: scope.stateName,
+        scopeType: scope.scopeType,
+        isStateAccount: true,
+        type: 'refresh'
+      },
+      { expiresIn: env.REFRESH_EXPIRES_IN }
+    );
+
+    await db.query(
+      `
+        INSERT INTO auth_refresh_tokens(user_id, token_hash, user_agent, ip_address, expires_at)
+        VALUES ($1, $2, $3, $4, $5)
+      `,
+      [user.id, hashToken(refreshToken), input.userAgent ?? null, input.ipAddress ?? null, getRefreshExpiryDate()]
+    );
+
+    await db.query('UPDATE users SET last_login_at = now() WHERE id = $1', [user.id]);
+
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        fullName: user.full_name,
+        username: user.username,
+        roleCode: user.role_code,
+        stateName,
+        scopeType: 'state',
+        isStateAccount: true,
         email: user.email,
         phone: user.phone
       }

@@ -35,17 +35,20 @@ CREATE TABLE role_permissions (
 CREATE TABLE users (
 	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 	role_id UUID NOT NULL REFERENCES roles(id),
+	username VARCHAR(60) UNIQUE,
 	full_name VARCHAR(150) NOT NULL,
 	email VARCHAR(190) UNIQUE,
 	phone VARCHAR(20) UNIQUE,
 	password_hash TEXT NOT NULL,
+	state_name VARCHAR(120),
+	is_state_account BOOLEAN NOT NULL DEFAULT FALSE,
 	status user_status NOT NULL DEFAULT 'active',
 	is_email_verified BOOLEAN NOT NULL DEFAULT FALSE,
 	is_phone_verified BOOLEAN NOT NULL DEFAULT FALSE,
 	last_login_at TIMESTAMPTZ,
 	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-	CONSTRAINT users_email_or_phone_required CHECK (email IS NOT NULL OR phone IS NOT NULL)
+	CONSTRAINT users_email_or_phone_or_username_required CHECK (email IS NOT NULL OR phone IS NOT NULL OR username IS NOT NULL)
 );
 
 CREATE TABLE auth_otps (
@@ -77,6 +80,7 @@ CREATE TABLE modules (
 	name VARCHAR(120) NOT NULL,
 	description TEXT,
 	enabled BOOLEAN NOT NULL DEFAULT TRUE,
+	state_name VARCHAR(120),
 	created_by UUID REFERENCES users(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -85,19 +89,22 @@ CREATE TABLE modules (
 CREATE TABLE clients (
 	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 	full_name VARCHAR(150) NOT NULL,
-	national_id VARCHAR(30) UNIQUE NOT NULL,
-	phone VARCHAR(20) UNIQUE NOT NULL,
+	national_id VARCHAR(30) NOT NULL,
+	phone VARCHAR(20) NOT NULL,
 	email VARCHAR(190),
 	region VARCHAR(120),
+	state_name VARCHAR(120),
 	status VARCHAR(20) NOT NULL DEFAULT 'active',
 	created_by UUID REFERENCES users(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+	UNIQUE (state_name, national_id),
+	UNIQUE (state_name, phone)
 );
 
 CREATE TABLE custom_fields (
 	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-	field_key VARCHAR(100) UNIQUE NOT NULL,
+	field_key VARCHAR(100) NOT NULL,
 	label VARCHAR(150) NOT NULL,
 	type field_type NOT NULL,
 	required BOOLEAN NOT NULL DEFAULT FALSE,
@@ -107,9 +114,11 @@ CREATE TABLE custom_fields (
 	options_json JSONB,
 	sort_order INT NOT NULL DEFAULT 0,
 	is_active BOOLEAN NOT NULL DEFAULT TRUE,
+	state_name VARCHAR(120),
 	created_by UUID REFERENCES users(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+	UNIQUE (state_name, field_key)
 );
 
 CREATE TABLE client_field_values (
@@ -131,6 +140,7 @@ CREATE TABLE sms_messages (
 	sender_id VARCHAR(30),
 	recipient_phone VARCHAR(20),
 	recipient_client_id UUID REFERENCES clients(id),
+	state_name VARCHAR(120),
 	body TEXT NOT NULL,
 	status message_status NOT NULL DEFAULT 'pending',
 	provider_message_id VARCHAR(120),
@@ -148,6 +158,7 @@ CREATE TABLE scheduled_messages (
 	name VARCHAR(150) NOT NULL,
 	channel message_channel NOT NULL DEFAULT 'sms',
 	body_template TEXT NOT NULL,
+	state_name VARCHAR(120),
 	target_type VARCHAR(20) NOT NULL,
 	target_payload JSONB NOT NULL,
 	scheduled_at TIMESTAMPTZ NOT NULL,
@@ -179,21 +190,54 @@ CREATE TABLE audit_logs (
 	created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE state_settings (
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	state_name VARCHAR(120) UNIQUE NOT NULL,
+	settings_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+	updated_by UUID REFERENCES users(id),
+	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE feature_registry (
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	kind VARCHAR(20) NOT NULL CHECK (kind IN ('feature', 'page', 'button', 'action')),
+	code VARCHAR(120) UNIQUE NOT NULL,
+	name VARCHAR(150) NOT NULL,
+	description TEXT,
+	state_name VARCHAR(120),
+	config_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+	enabled BOOLEAN NOT NULL DEFAULT TRUE,
+	created_by UUID REFERENCES users(id),
+	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE INDEX idx_users_role_id ON users(role_id);
 CREATE INDEX idx_users_status ON users(status);
+CREATE INDEX idx_users_state_name ON users(state_name);
+CREATE INDEX idx_users_username ON users(username);
 CREATE INDEX idx_otps_destination ON auth_otps(destination);
 CREATE INDEX idx_otps_expires_at ON auth_otps(expires_at);
 CREATE INDEX idx_refresh_user_id ON auth_refresh_tokens(user_id);
 CREATE INDEX idx_modules_enabled ON modules(enabled);
+CREATE INDEX idx_modules_state_name ON modules(state_name);
 CREATE INDEX idx_clients_region ON clients(region);
+CREATE INDEX idx_clients_state_name ON clients(state_name);
 CREATE INDEX idx_clients_status ON clients(status);
 CREATE INDEX idx_custom_fields_active_sort ON custom_fields(is_active, sort_order);
+CREATE INDEX idx_custom_fields_state_name ON custom_fields(state_name);
 CREATE INDEX idx_field_values_client ON client_field_values(client_id);
 CREATE INDEX idx_field_values_field ON client_field_values(field_id);
 CREATE INDEX idx_sms_status_created_at ON sms_messages(status, created_at DESC);
 CREATE INDEX idx_sms_recipient_phone ON sms_messages(recipient_phone);
+CREATE INDEX idx_sms_state_name ON sms_messages(state_name);
 CREATE INDEX idx_scheduled_next_run ON scheduled_messages(next_run_at) WHERE active = TRUE;
+CREATE INDEX idx_scheduled_state_name ON scheduled_messages(state_name);
 CREATE INDEX idx_audit_actor_created_at ON audit_logs(actor_user_id, created_at DESC);
+CREATE INDEX idx_state_settings_state_name ON state_settings(state_name);
+CREATE INDEX idx_feature_registry_kind_enabled ON feature_registry(kind, enabled);
+CREATE INDEX idx_feature_registry_state_name ON feature_registry(state_name);
 
 INSERT INTO roles (code, name, description, is_system)
 VALUES

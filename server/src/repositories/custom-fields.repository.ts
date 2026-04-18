@@ -1,8 +1,11 @@
 import { db } from '../config/database.js';
 
 export const customFieldsRepository = {
-  async list() {
-    const { rows } = await db.query('SELECT * FROM custom_fields ORDER BY sort_order ASC, created_at ASC');
+  async list(stateName?: string | null, isGlobalScope = false) {
+    const { rows } = await db.query(
+      'SELECT * FROM custom_fields WHERE ($1::boolean = TRUE OR state_name = $2) ORDER BY sort_order ASC, created_at ASC',
+      [isGlobalScope, stateName ?? null]
+    );
     return rows;
   },
 
@@ -16,11 +19,12 @@ export const customFieldsRepository = {
     filterable: boolean;
     optionsJson: unknown;
     sortOrder: number;
+    stateName?: string | null;
     createdBy: string;
   }) {
     const query = `
-      INSERT INTO custom_fields(field_key, label, type, required, unique_value, show_in_list, filterable, options_json, sort_order, created_by)
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+      INSERT INTO custom_fields(field_key, label, type, required, unique_value, show_in_list, filterable, options_json, sort_order, state_name, created_by)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
       RETURNING *
     `;
     const values = [
@@ -33,6 +37,7 @@ export const customFieldsRepository = {
       input.filterable,
       JSON.stringify(input.optionsJson ?? null),
       input.sortOrder,
+      input.stateName ?? null,
       input.createdBy
     ];
     const { rows } = await db.query(query, values);
@@ -53,7 +58,7 @@ export const customFieldsRepository = {
     }
   },
 
-  async getClientValues(clientId: string) {
+  async getClientValues(clientId: string, stateName?: string | null, isGlobalScope = false) {
     const query = `
       SELECT cf.id AS field_id, cf.label, cf.field_key, cf.type, cf.required,
              cfv.value_text, cfv.value_number, cfv.value_date, cfv.value_bool
@@ -61,9 +66,10 @@ export const customFieldsRepository = {
       LEFT JOIN client_field_values cfv
         ON cfv.field_id = cf.id AND cfv.client_id = $1
       WHERE cf.is_active = TRUE
+        AND ($2::boolean = TRUE OR cf.state_name = $3)
       ORDER BY cf.sort_order ASC
     `;
-    const { rows } = await db.query(query, [clientId]);
+    const { rows } = await db.query(query, [clientId, isGlobalScope, stateName ?? null]);
     return rows;
   }
 };

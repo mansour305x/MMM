@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة المالك — MMM</title>
+  <link rel="stylesheet" href="assets/css/design-system.css" />
+</head>
+<body>
+  <main style="padding:24px;max-width:1100px;margin:0 auto;">
+    <h1 style="margin:0 0 8px;">لوحة المالك: إدارة المزايا الديناميكية</h1>
+    <p style="margin:0 0 24px;color:var(--text-muted);">إضافة صفحات/أزرار/وظائف جديدة وتفعيلها أو تعطيلها مباشرة من قاعدة البيانات.</p>
+
+    <section class="card" style="padding:16px;margin-bottom:16px;">
+      <h2 style="margin:0 0 12px;font-size:18px;">إضافة عنصر جديد</h2>
+      <form id="featureForm" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">
+        <select id="kind" class="form-control">
+          <option value="feature">ميزة</option>
+          <option value="page">صفحة</option>
+          <option value="button">زر</option>
+          <option value="action">وظيفة</option>
+        </select>
+        <input id="code" class="form-control" placeholder="code_unique" required />
+        <input id="name" class="form-control" placeholder="الاسم" required />
+        <input id="stateName" class="form-control" placeholder="State (اختياري)" />
+        <textarea id="description" class="form-control" placeholder="الوصف" style="grid-column:1/-1;"></textarea>
+        <textarea id="configJson" class="form-control" placeholder='{"path":"/new-page.html","label":"صفحة جديدة"}' style="grid-column:1/-1;"></textarea>
+        <button class="btn btn-primary" type="submit" style="grid-column:1/-1;">إضافة</button>
+      </form>
+      <div id="createMessage" style="margin-top:10px;font-size:14px;"></div>
+    </section>
+
+    <section class="card" style="padding:16px;">
+      <h2 style="margin:0 0 12px;font-size:18px;">العناصر الحالية</h2>
+      <div id="featuresList">جاري التحميل...</div>
+    </section>
+  </main>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/owner-console.js"></script>
+</body>
+</html>

@@ -300,6 +300,9 @@
           <p class="auth-form-subtitle">
             ليس لديك حساب؟ <a href="register.html">أنشئ حسابًا الآن</a>
           </p>
+          <p class="auth-form-subtitle" style="margin-top:8px;">
+            تسجيل دخول الولاية؟ <a href="state-login.html">ادخل من هنا</a>
+          </p>
         </div>
 
         <form class="auth-form" id="loginForm">
@@ -310,10 +313,10 @@
           <div class="form-group">
             <label class="form-label">
               <i class="fas fa-envelope" style="color: var(--gold-600);"></i>
-              البريد الإلكتروني
+              البريد أو الهاتف أو اسم المستخدم
             </label>
             <div class="input-group">
-              <input type="email" id="email" class="form-control" placeholder="example@company.com" autocomplete="email" required />
+              <input type="text" id="email" class="form-control" placeholder="example@company.com أو danger" autocomplete="username" required />
               <span class="input-icon"><i class="fas fa-envelope"></i></span>
             </div>
           </div>
@@ -371,150 +374,7 @@
 
   </div>
 
-  <script>
-    // =============================================
-    // API Base URL Detection
-    // =============================================
-    function getAPIBase() {
-      // 1. Manually overridden (for custom deployments)
-      const stored = localStorage.getItem('apiBase');
-      if (stored) return stored;
-
-      const hostname = window.location.hostname;
-
-      // 2. GitHub Codespaces: xxx-5173.app.github.dev → xxx-4000.app.github.dev
-      if (hostname.includes('.app.github.dev') || hostname.includes('.github.dev')) {
-        return window.location.origin
-          .replace(/-5173\./, '-4000.')
-          .replace(/:5173/, ':4000');
-      }
-
-      // 3. GitHub Pages (mansour305x.github.io/MMM) → Render backend
-      if (hostname.includes('github.io')) {
-        return 'https://mmm-api.onrender.com';
-      }
-
-      // 4. Local development
-      return 'http://localhost:4000';
-    }
-
-    const API_BASE = getAPIBase();
-    console.log('📡 API Base URL:', API_BASE);
-
-    function togglePassword(id, btn) {
-      const input = document.getElementById(id);
-      const icon  = btn.querySelector('i');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.replace('fa-eye', 'fa-eye-slash');
-      } else {
-        input.type = 'password';
-        icon.classList.replace('fa-eye-slash', 'fa-eye');
-      }
-    }
-
-    // Custom checkbox
-    document.getElementById('rememberMe').addEventListener('change', function() {
-      const box  = document.getElementById('checkBox');
-      const icon = box.querySelector('i');
-      if (this.checked) {
-        box.style.background     = 'var(--accent-muted)';
-        box.style.borderColor    = 'var(--gold-500)';
-        icon.style.display       = 'flex';
-      } else {
-        box.style.background     = 'var(--bg-card)';
-        box.style.borderColor    = 'var(--border-default)';
-        icon.style.display       = 'none';
-      }
-    });
-
-    // Handle Login Form Submission
-    document.addEventListener('DOMContentLoaded', function() {
-      const form = document.getElementById('loginForm');
-      const loginBtn = document.getElementById('loginBtn');
-      const errorMsg = document.getElementById('errorMessage');
-
-      console.log('✅ Login page loaded', { form: !!form, loginBtn: !!loginBtn, errorMsg: !!errorMsg });
-
-      if (form) {
-        form.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          
-          const email = document.getElementById('email');
-          const password = document.getElementById('password');
-          
-          console.log('📝 Form submitted');
-
-          if (!email?.value || !password?.value) {
-            showError('البريد الإلكتروني وكلمة المرور مطلوبة');
-            return;
-          }
-
-          const identifier = email.value.trim();
-          const pass = password.value;
-
-          loginBtn.disabled = true;
-          loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التسجيل...';
-          errorMsg.style.display = 'none';
-
-          try {
-            const url = `${API_BASE}/api/auth/login`;
-            console.log('🚀 Sending login request to:', url);
-            
-            const response = await fetch(url, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({ identifier, password: pass })
-            });
-
-            console.log('📊 Response status:', response.status, response.statusText);
-
-            const data = await response.json();
-            console.log('📦 Response received:', { 
-              hasToken: !!data.accessToken, 
-              hasUser: !!data.user,
-              status: response.status 
-            });
-
-            if (!response.ok) {
-              throw new Error(data.message || `خطأ ${response.status}: تسجيل الدخول فشل`);
-            }
-
-            if (!data.accessToken) {
-              throw new Error('لم يتم الحصول على التوكن من الخادم');
-            }
-
-            // Save tokens
-            localStorage.setItem('accessToken', data.accessToken);
-            localStorage.setItem('refreshToken', data.refreshToken);
-            localStorage.setItem('user', JSON.stringify(data.user));
-            localStorage.setItem('apiBase', API_BASE);
-
-            console.log('✨ Login successful! Redirecting to dashboard...');
-            
-            // Redirect to dashboard
-            setTimeout(() => {
-              window.location.href = '/dashboard.html';
-            }, 500);
-
-          } catch (error) {
-            console.error('❌ Login error:', error.message);
-            showError(error.message || 'حدث خطأ في الاتصال. افتح متصفح Developer Tools (F12) لرؤية التفاصيل.');
-            loginBtn.disabled = false;
-            loginBtn.innerHTML = '<i class="fas fa-arrow-right-to-bracket"></i> تسجيل الدخول';
-          }
-        });
-      } else {
-        console.error('❌ Login form not found!');
-      }
-
-      function showError(message) {
-        console.error('⚠️ ERROR:', message);
-        errorMsg.textContent = message;
-        errorMsg.style.display = 'block';
-      }
-    });
-  </script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/login.js"></script>
 </body>
 </html>

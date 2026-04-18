@@ -1,8 +1,11 @@
 import { db } from '../config/database.js';
 
 export const messagesRepository = {
-  async findById(messageId: string) {
-    const { rows } = await db.query('SELECT * FROM sms_messages WHERE id = $1 LIMIT 1', [messageId]);
+  async findById(messageId: string, stateName?: string | null, isGlobalScope = false) {
+    const { rows } = await db.query(
+      'SELECT * FROM sms_messages WHERE id = $1 AND ($2::boolean = TRUE OR state_name = $3) LIMIT 1',
+      [messageId, isGlobalScope, stateName ?? null]
+    );
     return rows[0] ?? null;
   },
 
@@ -10,17 +13,28 @@ export const messagesRepository = {
     channel: 'sms' | 'whatsapp' | 'email';
     recipientPhone: string | null;
     recipientClientId: string | null;
+    stateName?: string | null;
     body: string;
     status?: string;
     createdBy: string;
     scheduledMessageId?: string | null;
   }) {
     const query = `
-      INSERT INTO sms_messages(channel, sender_id, recipient_phone, recipient_client_id, body, status, created_by, scheduled_message_id)
-      VALUES($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO sms_messages(channel, sender_id, recipient_phone, recipient_client_id, state_name, body, status, created_by, scheduled_message_id)
+      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
     `;
-    const values = [input.channel, 'MMM', input.recipientPhone, input.recipientClientId, input.body, input.status ?? 'pending', input.createdBy, input.scheduledMessageId ?? null];
+    const values = [
+      input.channel,
+      'MMM',
+      input.recipientPhone,
+      input.recipientClientId,
+      input.stateName ?? null,
+      input.body,
+      input.status ?? 'pending',
+      input.createdBy,
+      input.scheduledMessageId ?? null
+    ];
     const { rows } = await db.query(query, values);
     return rows[0];
   },
@@ -40,14 +54,18 @@ export const messagesRepository = {
     return rows[0] ?? null;
   },
 
-  async listMessages() {
-    const { rows } = await db.query('SELECT * FROM sms_messages ORDER BY created_at DESC');
+  async listMessages(stateName?: string | null, isGlobalScope = false) {
+    const { rows } = await db.query(
+      'SELECT * FROM sms_messages WHERE ($1::boolean = TRUE OR state_name = $2) ORDER BY created_at DESC',
+      [isGlobalScope, stateName ?? null]
+    );
     return rows;
   },
 
   async createScheduledMessage(input: {
     name: string;
     channel: 'sms' | 'whatsapp' | 'email';
+    stateName?: string | null;
     bodyTemplate: string;
     targetType: 'single' | 'bulk' | 'segment';
     targetPayload: unknown;
@@ -57,14 +75,15 @@ export const messagesRepository = {
     createdBy: string;
   }) {
     const query = `
-      INSERT INTO scheduled_messages(name, channel, body_template, target_type, target_payload, scheduled_at, recurrence, recurrence_payload, next_run_at, created_by)
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$6,$9)
+      INSERT INTO scheduled_messages(name, channel, body_template, state_name, target_type, target_payload, scheduled_at, recurrence, recurrence_payload, next_run_at, created_by)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$7,$10)
       RETURNING *
     `;
     const values = [
       input.name,
       input.channel,
       input.bodyTemplate,
+      input.stateName ?? null,
       input.targetType,
       JSON.stringify(input.targetPayload),
       input.scheduledAt,
@@ -76,8 +95,11 @@ export const messagesRepository = {
     return rows[0];
   },
 
-  async listScheduledMessages() {
-    const { rows } = await db.query('SELECT * FROM scheduled_messages ORDER BY created_at DESC');
+  async listScheduledMessages(stateName?: string | null, isGlobalScope = false) {
+    const { rows } = await db.query(
+      'SELECT * FROM scheduled_messages WHERE ($1::boolean = TRUE OR state_name = $2) ORDER BY created_at DESC',
+      [isGlobalScope, stateName ?? null]
+    );
     return rows;
   },
 

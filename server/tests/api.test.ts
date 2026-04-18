@@ -14,4 +14,10 @@ describe('MMM API', () => {
     const res = await app.inject({ method: 'GET', url: '/api/not-found' });
     expect(res.statusCode).toBe(404);
   });
+
+  it('protected users route without token returns 401', async () => {
+    const app = buildApp();
+    const res = await app.inject({ method: 'GET', url: '/api/users' });
+    expect(res.statusCode).toBe(401);
+  });
 });

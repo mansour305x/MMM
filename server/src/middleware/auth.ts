@@ -8,6 +8,9 @@ export async function requireAuth(request: FastifyRequest, _reply: FastifyReply)
   request.userContext = {
     userId: request.user.sub,
     roleCode: request.user.roleCode,
-    permissions: request.user.permissions
+    permissions: request.user.permissions,
+    stateName: request.user.stateName ?? null,
+    scopeType: request.user.scopeType ?? 'state',
+    isStateAccount: Boolean(request.user.isStateAccount)
   };
 }

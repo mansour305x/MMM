@@ -12,16 +12,20 @@ export const usersService = {
     fullName: string;
     email?: string;
     phone?: string;
+    username?: string;
+    stateName?: string;
+    isStateAccount?: boolean;
     password: string;
-    roleCode: 'owner' | 'supervisor' | 'member';
+    roleCode: 'owner' | 'supervisor' | 'member' | 'state-owner';
   }) {
-    const role = await rolesRepository.findByCode(input.roleCode);
+    const normalizedRole = input.roleCode === 'state-owner' ? 'supervisor' : input.roleCode;
+    const role = await rolesRepository.findByCode(normalizedRole);
     if (!role) throw new AppError(422, 'Invalid role');
 
-    const identifier = input.email ?? input.phone;
-    if (!identifier) throw new AppError(422, 'Email or phone is required');
+    const identifier = input.email ?? input.phone ?? input.username;
+    if (!identifier) throw new AppError(422, 'Email or phone or username is required');
 
-    const exists = await usersRepository.findByEmailOrPhone(identifier);
+    const exists = await usersRepository.findByEmailOrPhone(identifier, input.stateName ?? null, Boolean(input.isStateAccount));
     if (exists) throw new AppError(409, 'User already exists');
 
     const passwordHash = await hashPassword(input.password);
@@ -30,6 +34,9 @@ export const usersService = {
       fullName: input.fullName,
       email: input.email ?? null,
       phone: input.phone ?? null,
+      username: input.username ?? null,
+      stateName: input.stateName ?? null,
+      isStateAccount: input.isStateAccount ?? false,
       passwordHash
     });
   },

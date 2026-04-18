@@ -2,11 +2,11 @@ import { AppError } from '../middleware/error-handler.js';
 import { modulesRepository } from '../repositories/modules.repository.js';
 
 export const featuresService = {
-  async list() {
-    return modulesRepository.list();
+  async list(stateName: string | null, isGlobalScope: boolean) {
+    return modulesRepository.list(stateName, isGlobalScope);
   },
 
-  async create(input: { code: string; name: string; description?: string; enabled?: boolean; createdBy: string }) {
+  async create(input: { code: string; name: string; description?: string; enabled?: boolean; stateName?: string | null; createdBy: string }) {
     return modulesRepository.create(input);
   },
 

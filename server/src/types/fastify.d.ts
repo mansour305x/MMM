@@ -6,6 +6,9 @@ declare module 'fastify' {
       userId: string;
       roleCode: string;
       permissions: string[];
+      stateName: string | null;
+      scopeType: 'global' | 'state';
+      isStateAccount: boolean;
     };
   }
 }
@@ -16,12 +19,18 @@ declare module '@fastify/jwt' {
       sub: string;
       roleCode: string;
       permissions: string[];
+      stateName?: string | null;
+      scopeType?: 'global' | 'state';
+      isStateAccount?: boolean;
       type: 'access' | 'refresh';
     };
     user: {
       sub: string;
       roleCode: string;
       permissions: string[];
+      stateName?: string | null;
+      scopeType?: 'global' | 'state';
+      isStateAccount?: boolean;
       type: 'access' | 'refresh';
     };
   }

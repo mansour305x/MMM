@@ -15,6 +15,16 @@ const loginSchema = z.object({
   password: z.string().min(1, 'كلمة المرور مطلوبة')
 });
 
+const stateRegisterSchema = z.object({
+  stateName: z.string().min(2, 'اسم الولاية مطلوب'),
+  password: z.string().min(8, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل')
+});
+
+const stateLoginSchema = z.object({
+  stateName: z.string().min(2, 'اسم الولاية مطلوب'),
+  password: z.string().min(1, 'كلمة المرور مطلوبة')
+});
+
 const otpSchema = z.object({
   destination: z.string().min(3),
   purpose: z.enum(['register', 'forgot_password', 'login']),
@@ -48,6 +58,32 @@ export const authController = {
     try {
       const body = loginSchema.parse(request.body);
       const result = await authService.login(request.server, {
+        ...body,
+        userAgent: request.headers['user-agent'],
+        ipAddress: request.ip
+      });
+      return reply.send(result);
+    } catch (e) {
+      if (e instanceof ZodError) return handleZodError(e, reply);
+      throw e;
+    }
+  },
+
+  async registerState(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const body = stateRegisterSchema.parse(request.body);
+      const result = await authService.registerStateAccount(body);
+      return reply.status(201).send(result);
+    } catch (e) {
+      if (e instanceof ZodError) return handleZodError(e, reply);
+      throw e;
+    }
+  },
+
+  async loginState(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const body = stateLoginSchema.parse(request.body);
+      const result = await authService.loginState(request.server, {
         ...body,
         userAgent: request.headers['user-agent'],
         ipAddress: request.ip

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>دخول الولاية — MMM</title>
+  <link rel="stylesheet" href="assets/css/design-system.css" />
+</head>
+<body>
+  <div style="min-height:100vh;display:grid;place-items:center;background:var(--bg-primary);padding:24px;">
+    <div style="width:min(460px,100%);background:var(--bg-card);border:1px solid var(--border-default);border-radius:16px;padding:24px;">
+      <h1 style="margin:0 0 8px;font-size:24px;color:var(--text-primary);">تسجيل دخول الولاية</h1>
+      <p style="margin:0 0 20px;color:var(--text-muted);">ادخل باسم الولاية وكلمة المرور للوصول إلى بيانات نفس الولاية فقط.</p>
+
+      <div id="errorMessage" style="display:none;background:rgba(220,53,69,0.1);color:#dc3545;padding:10px;border-radius:8px;margin-bottom:12px;"></div>
+
+      <form id="stateLoginForm" style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label class="form-label">اسم الولاية</label>
+          <input id="stateName" class="form-control" type="text" placeholder="Riyadh" required />
+        </div>
+        <div>
+          <label class="form-label">كلمة المرور</label>
+          <input id="password" class="form-control" type="password" placeholder="********" required />
+        </div>
+        <button id="loginBtn" type="submit" class="btn btn-primary w-full">دخول الولاية</button>
+      </form>
+
+      <div style="margin-top:14px;font-size:13px;color:var(--text-muted);">
+        الرجوع إلى <a href="login.html">تسجيل الدخول العام</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/state-login.js"></script>
+</body>
+</html>

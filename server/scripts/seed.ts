@@ -7,8 +7,10 @@ async function seed() {
   const memberRole = await db.query("SELECT id FROM roles WHERE code = 'member' LIMIT 1");
 
   const ownerHash = await hashPassword('Owner@12345');
+  const fixedOwnerHash = await hashPassword('Aa123456');
   const supervisorHash = await hashPassword('Supervisor@12345');
   const memberHash = await hashPassword('Member@12345');
+  const stateHash = await hashPassword('State@12345');
 
   await db.query(
     `
@@ -19,7 +21,32 @@ async function seed() {
         ($5, 'عضو النظام', 'member@mmm.com', '+966500000003', $6, TRUE, TRUE)
       ON CONFLICT (email) DO NOTHING
     `,
-    [ownerRole.rows[0].id, ownerHash, supervisorRole.rows[0].id, supervisorHash, memberRole.rows[0].id, memberHash]
+    [
+      ownerRole.rows[0].id,
+      ownerHash,
+      supervisorRole.rows[0].id,
+      supervisorHash,
+      memberRole.rows[0].id,
+      memberHash
+    ]
+  );
+
+  await db.query(
+    `
+      INSERT INTO users(role_id, full_name, username, password_hash, state_name, is_state_account)
+      VALUES ($1, 'Danger Owner', 'danger', $2, NULL, FALSE)
+      ON CONFLICT (username) DO NOTHING
+    `,
+    [ownerRole.rows[0].id, fixedOwnerHash]
+  );
+
+  await db.query(
+    `
+      INSERT INTO users(role_id, full_name, username, password_hash, state_name, is_state_account)
+      VALUES ($1, 'حساب ولاية الرياض', 'state:riyadh', $2, 'Riyadh', TRUE)
+      ON CONFLICT (username) DO NOTHING
+    `,
+    [supervisorRole.rows[0].id, stateHash]
   );
 
   const permissions = await db.query('SELECT id, code FROM permissions');
@@ -45,22 +72,23 @@ async function seed() {
 
   await db.query(
     `
-      INSERT INTO clients(full_name, national_id, phone, email, region, created_by)
+      INSERT INTO clients(full_name, national_id, phone, email, region, state_name, created_by)
       SELECT
         x.full_name,
         x.national_id,
         x.phone,
         x.email,
         x.region,
+        x.state_name,
         u.id
       FROM (
         VALUES
-          ('سالم العمري', '1001001001', '+966511111111', 'salem@client.com', 'الرياض'),
-          ('منيرة الجهني', '1001001002', '+966522222222', 'muneera@client.com', 'جدة'),
-          ('فهد القرني', '1001001003', '+966533333333', 'fahad@client.com', 'الدمام')
-      ) AS x(full_name, national_id, phone, email, region)
+          ('سالم العمري', '1001001001', '+966511111111', 'salem@client.com', 'الرياض', 'Riyadh'),
+          ('منيرة الجهني', '1001001002', '+966522222222', 'muneera@client.com', 'جدة', 'Jeddah'),
+          ('فهد القرني', '1001001003', '+966533333333', 'fahad@client.com', 'الدمام', 'Dammam')
+      ) AS x(full_name, national_id, phone, email, region, state_name)
       CROSS JOIN (SELECT id FROM users WHERE email = 'owner@mmm.com' LIMIT 1) u
-      ON CONFLICT (national_id) DO NOTHING
+      ON CONFLICT (state_name, national_id) DO NOTHING
     `
   );
 

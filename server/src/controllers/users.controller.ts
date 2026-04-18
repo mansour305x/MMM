@@ -6,8 +6,11 @@ const createSchema = z.object({
   fullName: z.string().min(2),
   email: z.string().email().optional(),
   phone: z.string().min(8).optional(),
+  username: z.string().min(3).optional(),
+  stateName: z.string().min(2).optional(),
+  isStateAccount: z.boolean().optional(),
   password: z.string().min(8),
-  roleCode: z.enum(['owner', 'supervisor', 'member'])
+  roleCode: z.enum(['owner', 'supervisor', 'member', 'state-owner'])
 });
 
 const profilePatch = z.object({

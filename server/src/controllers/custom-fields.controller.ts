@@ -11,19 +11,26 @@ const createSchema = z.object({
   showInList: z.boolean().default(true),
   filterable: z.boolean().default(true),
   optionsJson: z.unknown().optional(),
+  stateName: z.string().optional(),
   sortOrder: z.number().int().default(0)
 });
 
 export const customFieldsController = {
-  async list(_request: FastifyRequest, reply: FastifyReply) {
-    return reply.send(await customFieldsService.list());
+  async list(request: FastifyRequest, reply: FastifyReply) {
+    const isGlobalScope = request.userContext?.scopeType === 'global';
+    const stateName = request.userContext?.stateName ?? null;
+    return reply.send(await customFieldsService.list(stateName, isGlobalScope));
   },
 
   async create(request: FastifyRequest, reply: FastifyReply) {
     const body = createSchema.parse(request.body);
+    const isGlobalScope = request.userContext?.scopeType === 'global';
+    const contextState = request.userContext?.stateName ?? null;
+    const targetStateName = isGlobalScope ? (body.stateName ?? contextState) : contextState;
     const row = await customFieldsService.create({
       ...body,
       optionsJson: body.optionsJson ?? null,
+      stateName: targetStateName,
       createdBy: request.userContext!.userId
     });
     return reply.status(201).send(row);

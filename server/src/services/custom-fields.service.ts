@@ -1,8 +1,8 @@
 import { customFieldsRepository } from '../repositories/custom-fields.repository.js';
 
 export const customFieldsService = {
-  async list() {
-    return customFieldsRepository.list();
+  async list(stateName: string | null, isGlobalScope: boolean) {
+    return customFieldsRepository.list(stateName, isGlobalScope);
   },
 
   async create(input: {
@@ -15,6 +15,7 @@ export const customFieldsService = {
     filterable: boolean;
     optionsJson: unknown;
     sortOrder: number;
+    stateName?: string | null;
     createdBy: string;
   }) {
     return customFieldsRepository.create(input);
